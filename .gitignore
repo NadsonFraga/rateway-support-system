@@ -1,0 +1,38 @@
+# Dependências
+node_modules/
+
+# Build do Next.js
+.next/
+out/
+build/
+
+# Segredos — nunca versionar (ver CLAUDE.md, seção "Segredos")
+.env
+.env.local
+.env.*.local
+!.env.example
+
+# Testes e prints do Playwright
+coverage/
+playwright-report/
+test-results/
+blob-report/
+
+# Logs
+npm-debug.log*
+*.log
+
+# TypeScript
+*.tsbuildinfo
+next-env.d.ts
+
+# Sistema operacional e editores
+.DS_Store
+Thumbs.db
+desktop.ini
+.vscode/*
+!.vscode/settings.json
+.idea/
+
+# Configurações locais do Claude Code
+.claude/settings.local.json

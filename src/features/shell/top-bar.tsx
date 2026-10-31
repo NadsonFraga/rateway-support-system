@@ -17,13 +17,13 @@ import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip
 import { cn } from "@/lib/utils";
 import { useTheme } from "@/features/settings/use-theme";
 import type { ThemePreference } from "@/features/settings/theme";
-import { ROLE_LABEL, type Role } from "@/features/auth/permissions";
+import { ROLE_LABEL } from "@/features/auth/permissions";
+import type { ShellUser } from "./shell-user";
 import { InboxButton } from "@/features/inbox/inbox-button";
 import { useConnectionState } from "@/features/realtime/client";
 import { TAB_REGISTRY } from "./tab-registry";
 import { useTabs } from "./tabs-store";
 
-export type ShellUser = { id: string; name: string; username: string; role: Role };
 
 function initials(name: string) {
   const parts = name.trim().split(/\s+/);
@@ -33,19 +33,22 @@ function initials(name: string) {
 // Barra superior (barra-superior-e-lateral.md): instância + trilha à esquerda; busca, caixa de entrada e conta à direita.
 export function TopBar({
   instanceName,
+  instanceLogos,
   user,
   onOpenSearch,
   onSignOut,
 }: {
   instanceName: string;
+  instanceLogos: { dark: string | null; light: string | null };
   user: ShellUser;
   onOpenSearch: () => void;
   onSignOut: () => void;
 }) {
   return (
     <header className="flex h-12 shrink-0 items-center gap-3 border-b border-line-subtle bg-sidebar px-3">
-      <span className="inline-flex h-7 max-w-[240px] items-center truncate rounded-md bg-surface-hover px-2.5 text-[13px] font-semibold text-ink">
-        {instanceName}
+      <span className="inline-flex h-7 max-w-[260px] items-center gap-2 truncate rounded-md bg-surface-hover px-2.5 text-[13px] font-semibold text-ink">
+        <InstanceLogo logos={instanceLogos} />
+        <span className="truncate">{instanceName}</span>
       </span>
       <Breadcrumb />
       <div className="ml-auto flex items-center gap-1.5">
@@ -108,7 +111,12 @@ function UserCapsule({ user, onSignOut }: { user: ShellUser; onSignOut: () => vo
               aria-hidden
               className="relative inline-flex size-6 items-center justify-center rounded-full border border-line-medium bg-surface-active text-[11px] font-semibold text-ink"
             >
-              {initials(user.name)}
+              {user.image ? (
+                // eslint-disable-next-line @next/next/no-img-element -- foto enviada pelo usuário
+                <img src={user.image} alt="" className="size-full rounded-full object-cover" />
+              ) : (
+                initials(user.name)
+              )}
               <span
                 data-testid="ponto-conexao"
                 data-estado={connection}
@@ -153,5 +161,20 @@ function UserCapsule({ user, onSignOut }: { user: ShellUser; onSignOut: () => vo
         </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>
+  );
+}
+
+/** Logo da instância no tema atual (o do outro tema serve de reserva), ao lado do nome (Configurações > Identidade). */
+function InstanceLogo({ logos }: { logos?: { dark: string | null; light: string | null } }) {
+  const dark = logos?.dark ?? logos?.light;
+  const light = logos?.light ?? logos?.dark;
+  if (!dark || !light) return null;
+  return (
+    <>
+      {/* eslint-disable-next-line @next/next/no-img-element -- logo enviado pelo administrador */}
+      <img src={dark} alt="" className="hidden h-4 w-auto shrink-0 dark:block" />
+      {/* eslint-disable-next-line @next/next/no-img-element -- logo enviado pelo administrador */}
+      <img src={light} alt="" className="h-4 w-auto shrink-0 dark:hidden" />
+    </>
   );
 }

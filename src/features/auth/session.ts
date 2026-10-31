@@ -1,5 +1,6 @@
 import "server-only";
 import { headers } from "next/headers";
+import { connection } from "next/server";
 import { redirect } from "next/navigation";
 import { auth } from "./auth";
 import { isPastMaxAge } from "./session-policy";
@@ -11,10 +12,13 @@ export type CurrentUser = {
   username: string;
   email: string;
   role: Role;
+  image: string | null;
 };
 
 /** Lê a sessão da requisição. Nunca confiar só no cookie: a validade é conferida no banco. */
 export async function getSession() {
+  // Sessão é sempre da requisição atual (usa a hora e números aleatórios): nunca pré-renderizada.
+  await connection();
   return auth.api.getSession({ headers: await headers() });
 }
 
@@ -36,5 +40,6 @@ export async function requireUser(): Promise<CurrentUser> {
     username: user.username ?? "",
     email: user.email,
     role: user.role as Role,
+    image: user.image ?? null,
   };
 }

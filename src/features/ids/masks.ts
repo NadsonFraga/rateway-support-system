@@ -1,5 +1,8 @@
 // Máscaras de código legível (identificadores-e-formatos.md). Funções puras, sem banco.
 
+/** Máscaras de código de cliente oferecidas em Configurações > Identificadores. */
+export const CLIENT_CODE_MASKS = ["{SIGLA}-{SEQ:3}", "{SIGLA}{ALEATORIO:4}", "{SEQ}"] as const;
+
 export const CLIENT_CODE_MIN = 3;
 export const CLIENT_CODE_MAX = 4;
 

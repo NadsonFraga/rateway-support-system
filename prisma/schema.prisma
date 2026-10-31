@@ -11,21 +11,68 @@ datasource db {
 
 /// Configurações da instância (white-label): nome, logos e formatos de código vêm daqui, nunca do código.
 model InstanceSettings {
-  id             String   @id @default("instancia")
-  name           String
-  logoDarkUrl    String?
-  logoLightUrl   String?
-  faviconUrl     String?
+  id                     String   @id @default("instancia")
+  name                   String
+  logoDarkUrl            String?
+  logoLightUrl           String?
+  faviconUrl             String?
   /// Prefixo das demandas (padrão DEM). Nenhuma sigla de cliente pode ser igual a ele.
-  demandPrefix   String   @default("DEM")
-  clientCodeMask String   @default("{SIGLA}-{SEQ:3}")
-  demandCodeMask String   @default("{PREFIXO}-{SEQ:4}")
+  demandPrefix           String   @default("DEM")
+  clientCodeMask         String   @default("{SIGLA}-{SEQ:3}")
+  demandCodeMask         String   @default("{PREFIXO}-{SEQ:4}")
+  /// Modelo da mensagem de cobrança via WhatsApp (D-38), com variáveis {{...}}.
+  billingMessageTemplate String   @default("Olá, {{contato_financeiro.nome}}. Lembrete: a cobrança de {{servico}} do {{cliente.nome}} vence em {{vencimento}}. Qualquer dúvida, estamos à disposição. Equipe {{instancia.nome}}")
   /// Palavras ignoradas ao sugerir a sigla do cliente.
-  ignoredWords   String[] @default(["Hotel", "Pousada", "Resort", "de", "do", "dos", "da", "das", "e"])
-  createdAt      DateTime @default(now())
-  updatedAt      DateTime @updatedAt
+  ignoredWords           String[] @default(["Hotel", "Pousada", "Resort", "de", "do", "dos", "da", "das", "e"])
+  createdAt              DateTime @default(now())
+  updatedAt              DateTime @updatedAt
 
   @@map("system_settings")
+}
+
+/// Imagens enviadas pelo sistema (D-89): logos, favicon e fotos de perfil, até 512 KB.
+model Asset {
+  id           String   @id @default(cuid())
+  data         Bytes
+  contentType  String
+  size         Int
+  uploadedById String?
+  createdAt    DateTime @default(now())
+
+  @@map("assets")
+}
+
+/// Catálogo da instância: canais de venda, Channel Managers, PMS e serviços internos (white-label).
+model CatalogItem {
+  id          String    @id @default(cuid())
+  /// "canal" | "channel_manager" | "pms" | "servico_interno"
+  category    String
+  name        String
+  logoUrl     String?
+  extranetUrl String?
+  /// Ordem das colunas na Matriz de Cadastros e no Cofre.
+  position    Int       @default(0)
+  /// Arquivado (D-88): some das listas, continua nos clientes que já usam.
+  archivedAt  DateTime?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  @@index([category, position])
+  @@map("catalog_items")
+}
+
+/// Serviços contratáveis (D-15). Nome editável; tipo e fases são regras do produto (fases só leitura na Fase 1).
+model Service {
+  /// Código interno estável: cadastro_revisao, consultoria, assessoria, central_reservas.
+  id        String   @id
+  name      String
+  /// "pontual" | "continuo"
+  kind      String
+  phases    String[]
+  position  Int
+  updatedAt DateTime @updatedAt
+
+  @@map("services")
 }
 
 /// Contadores dos códigos legíveis, um por tipo de entidade e escopo (sigla do cliente ou "global").

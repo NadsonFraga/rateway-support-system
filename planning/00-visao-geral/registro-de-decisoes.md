@@ -163,3 +163,12 @@ Decisões de produto e de design tomadas durante o planejamento. Cada entrada re
 | D-83 | Notificações ficam numa **caixa de entrada** (ícone `Inbox`, não sino). O painel abre preso ao ícone (não é toast): linhas de 44px, ponto de não lida monocromático, "Marcar todas como lidas"; clicar abre a aba certa. | Escolha do usuário. |
 | D-84 | O navegador **lembra as abas abertas** e as reabre no F5 ou no dia seguinte. Rascunhos não salvos sobrevivem só à troca de aba, não ao F5 (D-64). | Não perder o contexto de trabalho. |
 | D-85 | **Login por usuário.** Cada conta tem e-mail, usuário e senha; a tela de login pede **usuário + senha** e depois o código do Google Authenticator (D-55 continua). Usuário livre, definido pelo Administrador: minúsculas sem acento, números e ponto (ponto só entre letras ou números), de 3 a 30 caracteres; ao entrar, maiúsculas não importam. O e-mail não serve para entrar; fica para o futuro "Esqueci minha senha" (Fase 3). Ajusta D-61 (o resto dela continua). | Mais prático para a equipe entrar só com usuário e senha. |
+
+## 31/10/2026 — Configurações (Etapa 1.2)
+
+| # | Decisão | Motivo |
+| :--- | :--- | :--- |
+| D-86 | Em Minha Conta, a seção **Atalhos** mostra só a lista (sem edição) nesta fase. O modo de escuta e a troca de atalhos ficam para a Fase 2. | Resolve a contradição entre `configuracoes-design-v2.md` §3.2 e `fases-de-implementacao.md` (Fase 2, item 4). |
+| D-87 | **Configurações sem trava.** Cada seção edita direto e salva no cabeçalho. Se outra pessoa salvar a mesma seção enquanto você edita, aparece na hora um aviso na seção com o nome de quem salvou; você decide salvar por cima ou descartar (Esc). Sem alterações pendentes, a seção se atualiza sozinha. | Só administradores editam e conflitos são raros; um passo de "Editar" a mais não compensa. |
+| D-88 | Canal, Channel Manager, PMS e serviço interno do catálogo são **arquivados**, não excluídos: saem das listas e dos novos cadastros, mas continuam nos clientes que já os usam, e podem ser reativados. | Não quebrar o histórico do Cofre e da Matriz. |
+| D-89 | Logos e fotos de perfil ficam **no próprio banco** (até 512 KB; PNG, SVG, WebP ou JPG), servidos por rota própria que impede SVG de executar código. | Backup único junto com os dados; nada a configurar na VPS. |

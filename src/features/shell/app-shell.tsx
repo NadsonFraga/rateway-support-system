@@ -14,9 +14,14 @@ import { TabHost } from "./tab-host";
 import { TabStrip } from "./tab-strip";
 import { pathForTab, tabForPath } from "./tabs-model";
 import { TabsProvider, useTabs, useTabsApi } from "./tabs-store";
-import { TopBar, type ShellUser } from "./top-bar";
+import { TopBar } from "./top-bar";
+import { ShellUserProvider, type ShellUser } from "./shell-user";
+import { useRealtime } from "@/features/realtime/client";
+import { userTopic } from "@/features/realtime/types";
+import { INSTANCE_TOPIC } from "@/features/settings/topics";
 
-type AppShellProps = { instanceName: string; user: ShellUser };
+type InstanceLogos = { dark: string | null; light: string | null };
+type AppShellProps = { instanceName: string; instanceLogos: InstanceLogos; user: ShellUser };
 
 // A janela do sistema (objetivos-do-projeto.md): altura fixa, só a área da aba ativa rola.
 export function AppShell(props: AppShellProps) {
@@ -33,13 +38,22 @@ export function AppShell(props: AppShellProps) {
   );
 }
 
-function Shell({ instanceName, user, isDev }: AppShellProps & { isDev: boolean }) {
+function Shell({ instanceName, instanceLogos, user, isDev }: AppShellProps & { isDev: boolean }) {
   const router = useRouter();
   const [paletteOpen, setPaletteOpen] = React.useState(false);
   const isAdmin = user.role === ROLES.administrador;
 
   useUrlSync();
   useShortcuts(() => setPaletteOpen(true));
+
+  // Nome ou logos da instância mudaram (Configurações > Identidade): a barra superior se atualiza.
+  useRealtime(INSTANCE_TOPIC, () => router.refresh());
+  // Conta desativada ou senha refeita pelo Administrador: sai na hora.
+  useRealtime(userTopic(user.id), (message) => {
+    // Recarga completa de propósito: /sair é uma rota do servidor que apaga o cookie da sessão.
+    // eslint-disable-next-line @next/next/no-location-assign-relative-destination
+    if (message.event === "conta:encerrada") window.location.assign("/sair");
+  });
 
   async function signOut() {
     await authClient.signOut();
@@ -48,9 +62,11 @@ function Shell({ instanceName, user, isDev }: AppShellProps & { isDev: boolean }
   }
 
   return (
+    <ShellUserProvider value={user}>
     <div className="flex h-screen w-screen flex-col overflow-hidden bg-canvas">
       <TopBar
         instanceName={instanceName}
+        instanceLogos={instanceLogos}
         user={user}
         onOpenSearch={() => setPaletteOpen(true)}
         onSignOut={() => void signOut()}
@@ -71,6 +87,7 @@ function Shell({ instanceName, user, isDev }: AppShellProps & { isDev: boolean }
         onSendTestNotification={() => void sendTestNotification()}
       />
     </div>
+    </ShellUserProvider>
   );
 }
 

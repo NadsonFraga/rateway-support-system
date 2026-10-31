@@ -18,8 +18,11 @@ const jetbrainsMono = JetBrains_Mono({
 
 // Título da aba do navegador com o nome da instância (white-label).
 export async function generateMetadata(): Promise<Metadata> {
-  const { name } = await getInstanceIdentity();
-  return { title: { default: name, template: name ? `%s · ${name}` : "%s" } };
+  const { name, faviconUrl } = await getInstanceIdentity();
+  return {
+    title: { default: name, template: name ? `%s · ${name}` : "%s" },
+    icons: faviconUrl ? { icon: faviconUrl } : undefined,
+  };
 }
 
 export default function RootLayout({ children }: LayoutProps<"/">) {

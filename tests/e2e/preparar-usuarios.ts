@@ -19,6 +19,8 @@ async function main() {
   const { symmetricEncrypt } = await import("better-auth/crypto");
 
   await prisma.editLock.deleteMany();
+  await prisma.catalogItem.deleteMany();
+  await prisma.asset.deleteMany();
   await prisma.user.deleteMany({ where: { email: { endsWith: "@teste.invalid" } } });
   await prisma.instanceSettings.upsert({
     where: { id: "instancia" },
@@ -36,6 +38,7 @@ async function main() {
   const people = [
     { key: "admin", name: "Ana Administradora", role: ROLES.administrador },
     { key: "operador", name: "Bruno Operador", role: ROLES.operadorRotina },
+    { key: "admin2", name: "Dora Administradora", role: ROLES.administrador },
   ];
 
   for (const person of people) {

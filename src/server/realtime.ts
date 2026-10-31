@@ -136,6 +136,10 @@ async function listenToDatabase(io: Server, attempt = 0): Promise<void> {
       try {
         const message = JSON.parse(notification.payload) as RealtimeMessage;
         io.to(message.topic).emit("mensagem", message);
+        // Conta desativada ou com senha refeita: derruba as conexões abertas dessa pessoa na hora.
+        if (message.event === "conta:encerrada") {
+          setTimeout(() => io.in(message.topic).disconnectSockets(true), 200);
+        }
       } catch {
         // Mensagem fora do formato: ignorada.
       }

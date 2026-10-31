@@ -5,7 +5,7 @@ import { CREDENTIALS_FILE, type TestUser } from "./test-users";
 
 export type Theme = "escuro" | "claro";
 
-export function testUsers(): Record<"admin" | "operador" | "novo", TestUser> {
+export function testUsers(): Record<"admin" | "operador" | "admin2" | "novo", TestUser> {
   return JSON.parse(readFileSync(CREDENTIALS_FILE, "utf8"));
 }
 

@@ -8,6 +8,7 @@ export type InstanceIdentity = {
   name: string;
   logoDarkUrl: string | null;
   logoLightUrl: string | null;
+  faviconUrl: string | null;
 };
 
 // Nome e logos da instância (white-label): sempre do banco, nunca do código.
@@ -19,7 +20,7 @@ export async function getInstanceIdentity(): Promise<InstanceIdentity> {
   cacheLife("minutes");
 
   const settings = await prisma.instanceSettings.findFirst({
-    select: { name: true, logoDarkUrl: true, logoLightUrl: true },
+    select: { name: true, logoDarkUrl: true, logoLightUrl: true, faviconUrl: true },
   });
-  return settings ?? { name: "", logoDarkUrl: null, logoLightUrl: null };
+  return settings ?? { name: "", logoDarkUrl: null, logoLightUrl: null, faviconUrl: null };
 }

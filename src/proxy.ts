@@ -3,7 +3,7 @@ import { getSessionCookie } from "better-auth/cookies";
 
 // Checagem rápida antes da página: sem cookie de sessão, vai direto para o login.
 // A validação de verdade (banco, 12h, primeiro acesso) acontece em requireUser().
-const PUBLIC_PATHS = ["/entrar", "/sair"];
+const PUBLIC_PATHS = ["/entrar", "/sair", "/arquivos"];
 
 export function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;

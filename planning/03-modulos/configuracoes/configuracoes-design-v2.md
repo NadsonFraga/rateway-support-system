@@ -33,6 +33,7 @@ Detalhamento visual e de comportamento de Configurações (sistema e pessoais) e
 Sub-navegação segmentada: **Canais de venda | Channel Managers | PMS | Serviços internos**.
 - Linha: logo 20px, nome 14px medium, URL da extranet 13px `--text-secondary` (canais e Channel Managers), menu da linha.
 - **Adicionar:** botão primário no cabeçalho da seção. Modal com nome, logo (PNG/SVG, exibido em 16–20px), URL da extranet e categoria.
+- **Arquivar (D-88):** no menu da linha. O item sai das listas e de novos cadastros, mas continua nos clientes que já o usam; "Mostrar arquivados" permite reativar.
 - Ordem arrastável (alça `GripVertical` 16px no hover): define a ordem das colunas na Matriz de Cadastros e no Cofre. Ao arrastar, a linha ganha elevação `--bg-surface-elevated` e as demais se reposicionam com mola.
 
 ### 2.4 Serviços
@@ -46,7 +47,7 @@ Sub-navegação segmentada: **Canais de venda | Channel Managers | PMS | Serviç
 - **Prévia:** à direita, a mensagem preenchida com um cliente de exemplo, em balão neutro (`--bg-surface-elevated`, `rounded-xl`), sem verde do WhatsApp.
 
 ### 2.6 Membros
-- **Linha:** avatar de iniciais 24px, nome 14px medium, e-mail 13px `--text-secondary`, perfil (menu de seleção), 2FA ("Ativo" em `--text-primary` / "Pendente" em `--text-muted`), interruptor de conta ativa.
+- **Linha:** avatar de iniciais 24px, nome 14px medium, usuário (monoespaçada) e e-mail 13px `--text-secondary`, perfil (menu de seleção), 2FA ("Ativo" em `--text-primary` / "Pendente" em `--text-muted`), interruptor de conta ativa.
 - **Perfis (3):** Administrador, Analista de Implantação, Operador de Rotina (D-54).
 - **Novo membro** (D-62, D-85): botão primário no cabeçalho. Modal com nome, **usuário**, e-mail e perfil. Ao criar, o modal mostra a **senha temporária** gerada pelo sistema (fonte monoespaçada 16px, botão `Copy`) e o aviso "Esta senha só aparece agora. Repasse ao colaborador." O administrador entrega a senha pessoalmente ou por mensagem.
   - **Primeiro acesso:** login com a senha temporária → troca obrigatória de senha (`autocomplete="new-password"`) → configuração do Google Authenticator.
@@ -65,6 +66,7 @@ Sub-navegação segmentada: **Canais de venda | Channel Managers | PMS | Serviç
 - Iniciais ou foto (upload de 96px), nome, e-mail (somente leitura), "Trocar senha" e "Reconfigurar autenticador" (abrem modais curtos que pedem a senha atual).
 
 ### 3.2 Atalhos
+- **Fase 1 (D-86):** só a tabela, sem edição. O modo de escuta abaixo entra na Fase 2.
 - Tabela de 44px: ação (14px) à esquerda; combinação à direita em teclas-badge (fonte monoespaçada 12px, borda `--border-medium`, `rounded-md`, padding 2px 6px).
 - **Modo de escuta:** clicar na combinação deixa o badge com borda `--border-focus` pulsando suavemente e o texto "Pressione as teclas…". `Esc` cancela. Conflito com outra ação: aviso em âmbar abaixo da linha ("Já usado em Fechar aba") e o atalho não é salvo até o usuário confirmar a troca.
 - "Restaurar padrões" como link 13px no cabeçalho da seção.

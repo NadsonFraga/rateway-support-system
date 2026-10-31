@@ -35,6 +35,8 @@ import { Skeleton, SkeletonRow } from "@/components/ui/skeleton";
 import { ComingSoon } from "@/components/ui/coming-soon";
 import { CodeInput } from "@/components/ui/input-otp";
 import { Kbd } from "@/components/ui/kbd";
+import { Select } from "@/components/ui/select";
+import { Switch } from "@/components/ui/switch";
 import {
   Command,
   CommandEmpty,
@@ -162,9 +164,20 @@ function Buttons() {
 }
 
 function Fields() {
+  const [active, setActive] = React.useState(true);
   return (
     <Section title="Campos">
       <div className="grid max-w-lg gap-4">
+        <Field label="Perfil" htmlFor="campo-perfil">
+          <Select id="campo-perfil" defaultValue="analista">
+            <option value="administrador">Administrador</option>
+            <option value="analista">Analista de Implantação</option>
+            <option value="operador">Operador de Rotina</option>
+          </Select>
+        </Field>
+        <label className="flex items-center gap-3 text-sm text-ink">
+          <Switch checked={active} onChange={setActive} label="Conta ativa" /> Conta ativa
+        </label>
         <Field label="Nome do estabelecimento" htmlFor="campo-nome" help="Como aparece na listagem de clientes.">
           <Input id="campo-nome" placeholder="Digite o nome" />
         </Field>

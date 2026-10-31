@@ -21,7 +21,8 @@ async function ShellLoader() {
   return (
     <AppShell
       instanceName={instance.name}
-      user={{ id: user.id, name: user.name, username: user.username, role: user.role }}
+      instanceLogos={{ dark: instance.logoDarkUrl, light: instance.logoLightUrl }}
+      user={{ id: user.id, name: user.name, username: user.username, role: user.role, image: user.image }}
     />
   );
 }

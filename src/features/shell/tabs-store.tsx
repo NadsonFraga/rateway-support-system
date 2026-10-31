@@ -18,6 +18,8 @@ import {
 type TabsStore = TabsState & {
   /** Abas com alterações não salvas (não vão para o navegador: D-64). */
   dirty: Record<string, boolean>;
+  /** De onde vem o "não salvo" dentro de cada aba (ex.: cada seção de Configurações). */
+  dirtySources: Record<string, Record<string, boolean>>;
   /** Aba esperando confirmação para fechar com alterações não salvas. */
   pendingClose: string | null;
   open: (kind: TabKind, params?: Record<string, string>) => void;
@@ -27,7 +29,7 @@ type TabsStore = TabsState & {
   confirmClose: () => void;
   cancelClose: () => void;
   cycle: (step: 1 | -1) => void;
-  setDirty: (tabId: string, dirty: boolean) => void;
+  setDirty: (tabId: string, dirty: boolean, source?: string) => void;
 };
 
 function createTabsStore(userId: string, allowDev: boolean) {
@@ -38,6 +40,7 @@ function createTabsStore(userId: string, allowDev: boolean) {
         return {
           ...initialTabsState(),
           dirty: {},
+          dirtySources: {},
           pendingClose: null,
           open: (kind, params) => apply(openTab(get(), kind, params)),
           replace: (tabId, kind, params) => apply(replaceTab(get(), tabId, kind, params)),
@@ -50,14 +53,23 @@ function createTabsStore(userId: string, allowDev: boolean) {
             const tabId = get().pendingClose;
             if (!tabId) return;
             const dirty = { ...get().dirty };
+            const dirtySources = { ...get().dirtySources };
             delete dirty[tabId];
-            set({ dirty, pendingClose: null });
+            delete dirtySources[tabId];
+            set({ dirty, dirtySources, pendingClose: null });
             apply(closeTab(get(), tabId));
           },
           cancelClose: () => set({ pendingClose: null }),
           cycle: (step) => apply(cycleTab(get(), step)),
-          setDirty: (tabId, dirty) =>
-            set((state) => (state.dirty[tabId] === dirty ? state : { dirty: { ...state.dirty, [tabId]: dirty } })),
+          setDirty: (tabId, dirty, source = "conteudo") =>
+            set((state) => {
+              if ((state.dirtySources[tabId]?.[source] ?? false) === dirty) return state;
+              const sources = { ...state.dirtySources[tabId], [source]: dirty };
+              return {
+                dirtySources: { ...state.dirtySources, [tabId]: sources },
+                dirty: { ...state.dirty, [tabId]: Object.values(sources).some(Boolean) },
+              };
+            }),
         };
       },
       {
@@ -130,12 +142,23 @@ export function useCurrentTab() {
   return value;
 }
 
-/** O conteúdo da aba avisa se tem alterações não salvas: aparece o ponto na aba e o fechar pede confirmação. */
-export function useTabDirty(dirty: boolean) {
+/**
+ * O conteúdo da aba avisa se tem alterações não salvas: aparece o ponto na aba e o fechar pede confirmação.
+ * `source` separa partes da mesma aba (ex.: seções de Configurações): a aba fica "não salva" se qualquer uma estiver.
+ */
+export function useTabDirty(dirty: boolean, source = "conteudo") {
   const { tab } = useCurrentTab();
   const setDirty = useTabs((state) => state.setDirty);
   React.useEffect(() => {
-    setDirty(tab.id, dirty);
-  }, [tab.id, dirty, setDirty]);
-  React.useEffect(() => () => setDirty(tab.id, false), [tab.id, setDirty]);
+    setDirty(tab.id, dirty, source);
+  }, [tab.id, dirty, source, setDirty]);
+  React.useEffect(() => () => setDirty(tab.id, false, source), [tab.id, source, setDirty]);
 }
+
+/** Quais partes da aba atual estão com alterações não salvas. */
+export function useCurrentTabDirtySources() {
+  const { tab } = useCurrentTab();
+  return useTabs((state) => state.dirtySources[tab.id]) ?? EMPTY_SOURCES;
+}
+
+const EMPTY_SOURCES: Record<string, boolean> = {};

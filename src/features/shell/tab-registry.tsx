@@ -20,6 +20,8 @@ import { Input } from "@/components/ui/input";
 import { ListRow } from "@/components/ui/list-row";
 import { Kbd } from "@/components/ui/kbd";
 import { Button } from "@/components/ui/button";
+import { AccountTab } from "@/features/settings/account/account-tab";
+import { SystemSettingsTab } from "@/features/settings/system/settings-tab";
 import type { Tab, TabKind } from "./tabs-model";
 import { useCurrentTab, useTabDirty, useTabs } from "./tabs-store";
 
@@ -199,13 +201,13 @@ export const TAB_REGISTRY: Record<TabKind, TabDefinition> = {
     icon: Settings,
     title: () => "Configurações",
     breadcrumb: () => ["Configurações"],
-    content: placeholder("Configurações", "Identidade, catálogo, serviços, mensagens e membros chegam na Etapa 1.2."),
+    content: SystemSettingsTab,
   },
   "minha-conta": {
     icon: UserRound,
     title: () => "Minha Conta",
     breadcrumb: () => ["Minha Conta"],
-    content: placeholder("Minha Conta", "Perfil, troca de senha e aparência chegam na Etapa 1.2."),
+    content: AccountTab,
   },
   nova: { icon: Plus, title: () => "Nova aba", breadcrumb: () => ["Nova aba"], content: NewTabLauncher },
   rascunho: {

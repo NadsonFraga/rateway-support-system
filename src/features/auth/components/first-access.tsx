@@ -15,7 +15,7 @@ import { useHydrated } from "@/lib/use-hydrated";
 type Setup = Extract<AuthenticatorSetup, { ok: true }>;
 
 // Primeiro acesso: nova senha → QR Code do Google Authenticator → confirmação com código (D-62).
-export function FirstAccess({ email, needsPassword }: { email: string; needsPassword: boolean }) {
+export function FirstAccess({ username, needsPassword }: { username: string; needsPassword: boolean }) {
   const router = useRouter();
   const [setup, setSetup] = React.useState<Setup | null>(null);
   const hydrated = useHydrated();
@@ -77,7 +77,7 @@ export function FirstAccess({ email, needsPassword }: { email: string; needsPass
               </p>
             </div>
             {/* Ajuda o Gerenciador de Senhas do Google a salvar a senha nova na conta certa. */}
-            <input type="email" name="email" autoComplete="username" value={email} readOnly hidden />
+            <input type="text" name="username" autoComplete="username" value={username} readOnly hidden />
             <Field
               label={needsPassword ? "Nova senha" : "Senha"}
               htmlFor="password"

@@ -31,12 +31,16 @@ A barra superior de abas opera como o núcleo multitarefa do sistema, reproduzin
 
 ## 3. Atalhos Globais e Registro de Ações (Action Registry)
 
-Os atalhos de navegação não são fixos no código; eles são vinculados a um **Action Registry**, permitindo que cada colaborador personalize suas combinações nas preferências da conta:
+Os atalhos de navegação não são fixos no código; eles são vinculados a um **Action Registry**, permitindo que cada colaborador personalize suas combinações nas preferências da conta (personalização na Fase 2):
 
-| Identificador da Ação | Atalho Padrão | Descrição Funcional |
+| Identificador da Ação | Atalho Padrão (D-81) | Descrição Funcional |
 | :--- | :--- | :--- |
-| `tabs.new` | `Ctrl + T` | Abre uma nova aba limpa |
-| `tabs.close` | `Ctrl + W` | Fecha a aba ativa (exceto a aba Início) |
-| `tabs.next` | `Ctrl + Tab` | Alterna para a próxima aba à direita |
-| `tabs.prev` | `Ctrl + Shift + Tab` | Alterna para a aba anterior à esquerda |
+| `tabs.new` | `Alt + T` | Abre uma nova aba limpa |
+| `tabs.close` | `Alt + W` | Fecha a aba ativa (exceto a aba Início) |
+| `tabs.next` | `Alt + .` | Alterna para a próxima aba à direita |
+| `tabs.prev` | `Alt + ,` | Alterna para a aba anterior à esquerda |
 | `command_bar.open` | `Ctrl + K` | Abre a paleta de comandos rápida |
+
+> Ctrl+T, Ctrl+W e Ctrl+Tab são reservados pelo Chrome para as abas do próprio navegador e não podem ser usados (D-81).
+
+5. **Reabrir abas (D-84):** a lista de abas abertas fica guardada no navegador e é reaberta no F5 ou no dia seguinte.

@@ -12,10 +12,10 @@ test("login com senha e Google Authenticator, tela vazia e Sair", async ({ brows
   const users = testUsers();
   const page = await newPersonPage(browser);
   await signIn(page, users.admin);
-  await expect(page.getByRole("heading", { name: "Fundação pronta" })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Início", exact: true })).toBeVisible();
   await expect(page).toHaveTitle(/Instância de Teste/);
 
-  await page.getByRole("button", { name: `Conta de ${users.admin.name}` }).click();
+  await page.getByRole("button", { name: users.admin.name, exact: true }).click();
   await page.getByRole("menuitem", { name: "Sair" }).click();
   await page.waitForURL("/entrar");
   await page.goto("/");
@@ -26,10 +26,30 @@ test("senha errada mostra mensagem genérica", async ({ browser }) => {
   const users = testUsers();
   const page = await newPersonPage(browser);
   await page.goto("/entrar");
-  await page.getByLabel("E-mail").fill(users.admin.email);
+  await page.getByLabel("Usuário").fill(users.admin.username);
   await page.getByLabel("Senha", { exact: true }).fill("senha-errada-123");
   await page.getByRole("button", { name: "Entrar" }).click();
-  await expect(page.getByText("E-mail ou senha incorretos.")).toBeVisible();
+  await expect(page.getByText("Usuário ou senha incorretos.")).toBeVisible();
+});
+
+test("login por usuário: maiúsculas não importam e o login por e-mail está desligado (D-85)", async ({ browser }) => {
+  const users = testUsers();
+  const page = await newPersonPage(browser);
+  const headers = { origin: "http://localhost:3100" };
+
+  const byEmail = await page.request.post("/api/auth/sign-in/email", {
+    data: { email: users.admin.email, password: users.admin.password },
+    headers,
+  });
+  expect(byEmail.status()).toBe(404);
+  const lookup = await page.request.post("/api/auth/is-username-available", {
+    data: { username: users.admin.username },
+    headers,
+  });
+  expect(lookup.status()).toBe(404);
+
+  await signIn(page, { ...users.admin, username: users.admin.username.toUpperCase() });
+  await expect(page.getByRole("heading", { name: "Início", exact: true })).toBeVisible();
 });
 
 test("tempo real: alteração aparece no outro navegador em menos de 1 segundo, com trava", async ({ browser }) => {
@@ -76,10 +96,10 @@ test("prints das telas nos dois temas", async ({ browser }) => {
     await page.screenshot({ path: `${PRINTS}/login-${theme}.png` });
 
     await signIn(page, users.admin);
-    await expect(page.getByRole("heading", { name: "Fundação pronta" })).toBeVisible();
+    await expect(page.getByRole("heading", { name: "Início", exact: true })).toBeVisible();
     await page.screenshot({ path: `${PRINTS}/tela-vazia-${theme}.png` });
 
-    await page.getByRole("button", { name: `Conta de ${users.admin.name}` }).click();
+    await page.getByRole("button", { name: users.admin.name, exact: true }).click();
     await expect(page.getByRole("menuitem", { name: "Sair" })).toBeVisible();
     await page.waitForTimeout(300); // fim da animação de abertura do menu
     await page.screenshot({ path: `${PRINTS}/menu-avatar-${theme}.png` });
@@ -139,7 +159,7 @@ test("primeiro acesso: senha temporária, senha nova, autenticador; nada funcion
   const { novo } = testUsers();
   const page = await newPersonPage(browser);
   await page.goto("/entrar");
-  await page.getByLabel("E-mail").fill(novo.email);
+  await page.getByLabel("Usuário").fill(novo.username);
   await page.getByLabel("Senha", { exact: true }).fill(novo.password);
   await page.getByRole("button", { name: "Entrar" }).click();
   await page.waitForURL("/primeiro-acesso");
@@ -161,5 +181,5 @@ test("primeiro acesso: senha temporária, senha nova, autenticador; nada funcion
   const code = await createOTP(base32.decode(manualKey), { digits: 6, period: 30 }).totp();
   await page.getByLabel("Código de 6 dígitos").fill(code);
   await page.waitForURL("/");
-  await expect(page.getByRole("heading", { name: "Fundação pronta" })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Início", exact: true })).toBeVisible();
 });

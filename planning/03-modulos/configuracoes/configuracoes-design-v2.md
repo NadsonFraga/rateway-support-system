@@ -48,7 +48,7 @@ Sub-navegação segmentada: **Canais de venda | Channel Managers | PMS | Serviç
 ### 2.6 Membros
 - **Linha:** avatar de iniciais 24px, nome 14px medium, e-mail 13px `--text-secondary`, perfil (menu de seleção), 2FA ("Ativo" em `--text-primary` / "Pendente" em `--text-muted`), interruptor de conta ativa.
 - **Perfis (3):** Administrador, Analista de Implantação, Operador de Rotina (D-54).
-- **Novo membro** (D-62): botão primário no cabeçalho. Modal com nome, e-mail e perfil. Ao criar, o modal mostra a **senha temporária** gerada pelo sistema (fonte monoespaçada 16px, botão `Copy`) e o aviso "Esta senha só aparece agora. Repasse ao colaborador." O administrador entrega a senha pessoalmente ou por mensagem.
+- **Novo membro** (D-62, D-85): botão primário no cabeçalho. Modal com nome, **usuário**, e-mail e perfil. Ao criar, o modal mostra a **senha temporária** gerada pelo sistema (fonte monoespaçada 16px, botão `Copy`) e o aviso "Esta senha só aparece agora. Repasse ao colaborador." O administrador entrega a senha pessoalmente ou por mensagem.
   - **Primeiro acesso:** login com a senha temporária → troca obrigatória de senha (`autocomplete="new-password"`) → configuração do Google Authenticator.
   - **Validade:** a senha temporária expira em 48h; depois disso, o administrador gera outra pelo menu da linha ("Gerar nova senha temporária"). O mesmo item serve para quem esqueceu a senha.
   - **Linha do membro:** enquanto o primeiro acesso não acontece, a coluna 2FA mostra "Aguardando primeiro acesso" em `--text-muted`.
@@ -84,22 +84,22 @@ Login próprio com e-mail, senha e Google Authenticator (D-55), usando uma solu�
                     [logo da instância]
                     Entrar no {nome da plataforma}
 
-                    E-mail
+                    Usuário
                     [                              ]
                     Senha
                     [                              ] [Eye]
 
                     [            Entrar            ]
 ```
-- **E-mail e senha na mesma tela, no mesmo formulário (D-61):** vários colaboradores usam o mesmo computador e o Gerenciador de Senhas do Google. Os dois campos ficam juntos para que o navegador ofereça a lista de contas salvas e preencha e-mail e senha de uma vez. Requisitos técnicos:
-  - um único `<form>` com `method="post"`; campo de e-mail com `type="email"`, `name="email"` e `autocomplete="username"`; campo de senha com `type="password"`, `name="password"` e `autocomplete="current-password"`;
-  - nunca dividir em duas telas (primeiro e-mail, depois senha);
+- **Usuário e senha na mesma tela, no mesmo formulário (D-61, D-85):** o login é por usuário; o e-mail não serve para entrar. Vários colaboradores usam o mesmo computador e o Gerenciador de Senhas do Google. Os dois campos ficam juntos para que o navegador ofereça a lista de contas salvas e preencha usuário e senha de uma vez. Requisitos técnicos:
+  - um único `<form>` com `method="post"`; campo de usuário com `type="text"`, `name="username"`, `autocomplete="username"` e `autocapitalize="none"`; campo de senha com `type="password"`, `name="password"` e `autocomplete="current-password"`;
+  - nunca dividir em duas telas (primeiro usuário, depois senha);
   - definir senha (primeiro acesso ou troca) com `autocomplete="new-password"`, para o Google oferecer salvar a senha nova;
   - código do autenticador com `autocomplete="one-time-code"` e `inputmode="numeric"`.
 - **Computador compartilhado:** "Sair" fica visível no menu do avatar (ícone `LogOut` 16px), e a sessão expira após 2 horas sem uso, com limite máximo de 12 horas (D-73), para um colaborador não continuar logado na conta de outro.
 - **Fundo:** `--bg-app`; cartão central de 380px, `--bg-surface`, borda `--border-subtle`, `rounded-2xl`, padding 32px. Sem ilustrações.
 - **Entrar:** botão primário monocromático de largura total, 40px. Durante a verificação, o rótulo dá lugar a um indicador de carregamento discreto (sem mudar a largura).
-- **Erro:** mensagem genérica em coral 13px abaixo do botão ("E-mail ou senha incorretos"), sem revelar qual dos dois está errado; o cartão faz um leve deslocamento horizontal (mola `taptic`, 4px).
+- **Erro:** mensagem genérica em coral 13px abaixo do botão ("Usuário ou senha incorretos"), sem revelar qual dos dois está errado; o cartão faz um leve deslocamento horizontal (mola `taptic`, 4px).
 - **Segundo passo (autenticador):** o cartão troca o conteúdo com transição cruzada: "Código do autenticador" + 6 caixas de 44px (fonte monoespaçada 20px). Avanço automático entre as caixas, colar o código de 6 dígitos preenche tudo, envio automático ao completar.
 - **Primeiro acesso:** definir senha → QR Code de 180px para o Google Authenticator + código de texto para digitação manual → confirmar com um código de 6 dígitos.
 - **Após entrar:** abre o Início com a animação de montagem (primeira abertura do dia).

@@ -22,7 +22,7 @@ export async function newPersonPage(browser: Browser, theme: Theme = "escuro") {
 
 export async function signIn(page: Page, user: TestUser) {
   await page.goto("/entrar");
-  await page.getByLabel("E-mail").fill(user.email);
+  await page.getByLabel("Usuário").fill(user.username);
   await page.getByLabel("Senha", { exact: true }).fill(user.password);
   await page.getByRole("button", { name: "Entrar" }).click();
   await expect(page.getByRole("heading", { name: "Código do autenticador" })).toBeVisible();

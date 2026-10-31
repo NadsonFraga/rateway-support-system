@@ -1,5 +1,5 @@
 // Semente inicial: cria a instância e o primeiro Administrador.
-// Uso: npm run semente -- --instancia "Nome da plataforma" --nome "Seu nome" --email voce@empresa.com
+// Uso: npm run semente -- --instancia "Nome da plataforma" --nome "Seu nome" --usuario seu.usuario --email voce@empresa.com
 // A senha temporária aparece só neste terminal (não fica salva em lugar nenhum além do banco, cifrada).
 import { config } from "dotenv";
 import { readFileSync } from "node:fs";
@@ -12,21 +12,32 @@ const { values } = parseArgs({
     instancia: { type: "string" },
     nome: { type: "string" },
     email: { type: "string" },
-    // Alternativa para nomes com acento no Windows: um JSON com { instancia, nome, email } em UTF-8.
+    usuario: { type: "string" },
+    // Alternativa para nomes com acento no Windows: um JSON com { instancia, nome, usuario, email } em UTF-8.
     dados: { type: "string" },
   },
 });
 
 async function main() {
   const fromFile = values.dados
-    ? (JSON.parse(readFileSync(values.dados, "utf8")) as { instancia?: string; nome?: string; email?: string })
+    ? (JSON.parse(readFileSync(values.dados, "utf8")) as { instancia?: string; nome?: string; usuario?: string; email?: string })
     : {};
   const instanceName = (fromFile.instancia ?? values.instancia)?.trim();
   const adminName = (fromFile.nome ?? values.nome)?.trim();
   const adminEmail = (fromFile.email ?? values.email)?.trim().toLowerCase();
+  const adminUsername = (fromFile.usuario ?? values.usuario)?.trim().toLowerCase();
 
-  if (!instanceName || !adminName || !adminEmail) {
-    console.error('Informe os três dados: --instancia "Nome" --nome "Seu nome" --email voce@empresa.com');
+  if (!instanceName || !adminName || !adminEmail || !adminUsername) {
+    console.error(
+      'Informe os quatro dados: --instancia "Nome" --nome "Seu nome" --usuario seu.usuario --email voce@empresa.com'
+    );
+    process.exit(1);
+  }
+
+  const { validateUsername, USERNAME_PROBLEM_MESSAGE } = await import("@/features/auth/username");
+  const usernameProblem = validateUsername(adminUsername);
+  if (usernameProblem) {
+    console.error(`Usuário inválido: ${USERNAME_PROBLEM_MESSAGE[usernameProblem]}`);
     process.exit(1);
   }
 
@@ -57,13 +68,13 @@ async function main() {
       name: adminName,
       password: tempPassword,
       role: ROLES.administrador,
-      data: { mustChangePassword: true, tempPasswordExpiresAt: tempPasswordExpiry() },
+      data: { username: adminUsername, mustChangePassword: true, tempPasswordExpiresAt: tempPasswordExpiry() },
     },
   });
 
   console.log("");
   console.log(`Instância: ${instanceName}`);
-  console.log(`Administrador criado: ${adminName} <${adminEmail}>`);
+  console.log(`Administrador criado: ${adminName} (usuário: ${adminUsername}, e-mail: ${adminEmail})`);
   console.log("");
   console.log(`Senha temporária (válida por 48h): ${tempPassword}`);
   console.log("Esta senha só aparece agora. No primeiro acesso o sistema pede uma senha nova e o Google Authenticator.");

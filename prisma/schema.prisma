@@ -53,6 +53,22 @@ model EditLock {
   @@map("edit_locks")
 }
 
+/// Caixa de entrada (D-83): avisos para cada pessoa, entregues em tempo real.
+model Notification {
+  id        String    @id @default(cuid())
+  userId    String
+  title     String
+  body      String?
+  /// Aba que abre ao clicar (tipo e parâmetros), ex.: { "kind": "demandas" }.
+  target    Json?
+  readAt    DateTime?
+  createdAt DateTime  @default(now())
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, createdAt])
+  @@map("notifications")
+}
+
 /// Registro de teste da Etapa 1.0: prova do tempo real e da trava em /dev/tempo-real.
 model RealtimeProbe {
   id          String   @id @default("teste")
@@ -66,24 +82,27 @@ model RealtimeProbe {
 // --- Login (Better Auth: e-mail, senha, Google Authenticator e perfis). Gerado pela ferramenta "auth generate". ---
 
 model User {
-  id                    String      @id
+  id                    String         @id
   name                  String
   email                 String
-  emailVerified         Boolean     @default(false)
+  /// Nome de usuário para entrar (D-85): minúsculas, números e ponto, único.
+  username              String?        @unique
+  emailVerified         Boolean        @default(false)
   image                 String?
-  createdAt             DateTime    @default(now())
-  updatedAt             DateTime    @updatedAt
-  twoFactorEnabled      Boolean?    @default(false)
+  createdAt             DateTime       @default(now())
+  updatedAt             DateTime       @updatedAt
+  twoFactorEnabled      Boolean?       @default(false)
   role                  String?
-  banned                Boolean?    @default(false)
+  banned                Boolean?       @default(false)
   banReason             String?
   banExpires            DateTime?
-  mustChangePassword    Boolean?    @default(false)
+  mustChangePassword    Boolean?       @default(false)
   tempPasswordExpiresAt DateTime?
   sessions              Session[]
   accounts              Account[]
   twofactors            TwoFactor[]
   editLocks             EditLock[]
+  notifications         Notification[]
 
   @@unique([email])
   @@map("user")

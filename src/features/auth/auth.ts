@@ -4,8 +4,10 @@ import { prismaAdapter } from "better-auth/adapters/prisma";
 import { nextCookies } from "better-auth/next-js";
 import { admin } from "better-auth/plugins/admin";
 import { twoFactor } from "better-auth/plugins/two-factor";
+import { username } from "better-auth/plugins/username";
 import { prisma } from "@/lib/db";
 import { ac, roles, ROLES } from "./permissions";
+import { USERNAME_MAX, USERNAME_MIN, validateUsername } from "./username";
 import {
   isTempPasswordExpired,
   SESSION_IDLE_SECONDS,
@@ -20,7 +22,7 @@ export const FIRST_ACCESS_PENDING = "PRIMEIRO_ACESSO_PENDENTE";
 const FIRST_ACCESS_PATHS = new Set([
   "/get-session",
   "/sign-out",
-  "/sign-in/email",
+  "/sign-in/username",
   "/two-factor/enable",
   "/two-factor/verify-totp",
   "/two-factor/get-totp-uri",
@@ -33,6 +35,10 @@ export const auth = betterAuth({
   baseURL: process.env.BETTER_AUTH_URL,
   secret: process.env.BETTER_AUTH_SECRET,
   database: prismaAdapter(prisma, { provider: "postgresql" }),
+
+  // Entrada só por usuário (D-85). O e-mail fica na conta, mas não serve para entrar,
+  // e ninguém de fora consegue consultar se um usuário existe.
+  disabledPaths: ["/sign-in/email", "/is-username-available"],
 
   emailAndPassword: {
     enabled: true,
@@ -87,12 +93,20 @@ export const auth = betterAuth({
     max: 100,
     customRules: {
       // Proteção contra tentativas repetidas de senha e de código (por endereço, por minuto).
-      "/sign-in/email": { window: 60, max: SIGN_IN_LIMIT },
+      "/sign-in/username": { window: 60, max: SIGN_IN_LIMIT },
       "/two-factor/verify-totp": { window: 60, max: SIGN_IN_LIMIT },
     },
   },
 
   plugins: [
+    username({
+      minUsernameLength: USERNAME_MIN,
+      maxUsernameLength: USERNAME_MAX,
+      // Converte para minúsculas antes de validar: "Nadson.Fraga" entra como "nadson.fraga".
+      validationOrder: { username: "post-normalization" },
+      usernameValidator: (value) => validateUsername(value) === null,
+      displayUsername: false,
+    }),
     twoFactor({ totpOptions: { digits: 6, period: 30 } }),
     admin({
       ac,

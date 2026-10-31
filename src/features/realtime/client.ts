@@ -10,6 +10,12 @@ let socket: Socket | null = null;
 function getSocket() {
   if (!socket) {
     socket = io({ path: "/socket.io", transports: ["websocket"], withCredentials: true });
+    // Sessão vencida (2h sem uso ou 12h no total, D-73): o servidor recusa a conexão e a tela volta ao login.
+    socket.on("connect_error", (error) => {
+      // Recarga completa de propósito: /sair é uma rota do servidor que apaga o cookie da sessão.
+      // eslint-disable-next-line @next/next/no-location-assign-relative-destination
+      if (error.message === "nao-autorizado") window.location.assign("/sair?motivo=expirada");
+    });
   }
   return socket;
 }
@@ -35,6 +41,20 @@ export function useRealtimeConnected() {
     () => getSocket().connected,
     () => false
   );
+}
+
+/**
+ * "conectado" ou "sem-conexao". Ao abrir a página há 5s de tolerância antes de acusar falta de conexão,
+ * para o ponto não piscar coral enquanto a conexão ainda está sendo feita.
+ */
+export function useConnectionState(): "conectado" | "sem-conexao" {
+  const connected = useRealtimeConnected();
+  const [graceOver, setGraceOver] = useState(false);
+  useEffect(() => {
+    const timer = window.setTimeout(() => setGraceOver(true), 5000);
+    return () => window.clearTimeout(timer);
+  }, []);
+  return connected || !graceOver ? "conectado" : "sem-conexao";
 }
 
 /** Recebe as mensagens de um tópico enquanto o componente estiver na tela. */

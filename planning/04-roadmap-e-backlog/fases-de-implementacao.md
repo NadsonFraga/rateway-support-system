@@ -32,12 +32,12 @@ Construir primeiro o que os outros módulos usam:
 **Pronto quando:** é possível entrar com uma conta, ver a tela vazia nos dois temas, e uma alteração de teste feita num navegador aparece em outro em menos de 1 segundo.
 
 ### 1.1 Shell e Navegação
-- Barra superior com pílula da instância, breadcrumb, busca `Ctrl+K`, sininho de notificações (tempo real) e menu do avatar com "Sair".
+- Barra superior com pílula da instância, breadcrumb, busca `Ctrl+K`, caixa de entrada de notificações (tempo real, D-83) e menu do avatar com "Sair".
 - Abas com estado preservado, atalhos padrão (Action Registry) e ponto de "alterações não salvas".
 - Sidebar redimensionável com árvore de clientes e Opções de Exibição (Agrupar e Classificar).
 - Animação de montagem só na primeira abertura de cada aba (D-31).
 
-**Pronto quando:** dá para abrir, alternar e fechar abas sem perder o que foi digitado, e o sininho recebe uma notificação de teste na hora.
+**Pronto quando:** dá para abrir, alternar e fechar abas sem perder o que foi digitado, e a caixa de entrada recebe uma notificação de teste na hora.
 
 ### 1.2 Configurações
 - Sistema: Identidade, Identificadores, Catálogo (canais, Channel Managers, PMS, serviços internos), Serviços, Mensagens, Membros. "Etapas dos Cadastros" como "Em breve".

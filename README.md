@@ -23,7 +23,7 @@ O sistema abre em http://localhost:3000.
 ### Primeiro Administrador
 
 ```bash
-npm run semente -- --instancia "Nome da plataforma" --nome "Seu nome" --email voce@empresa.com
+npm run semente -- --instancia "Nome da plataforma" --nome "Seu nome" --usuario seu.usuario --email voce@empresa.com
 ```
 
 A senha temporária aparece só no terminal e vale 48 horas. No primeiro acesso o sistema pede uma senha nova e o Google Authenticator.

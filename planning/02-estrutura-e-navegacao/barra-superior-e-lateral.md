@@ -28,7 +28,7 @@ The system operates as a single-window desktop application inspired by the **Ant
 
 The top-right corner is dedicated strictly to personal operator controls:
 - **Global Search:** `[ ⌘K Buscar ]` or `[ Ctrl+K ]` (Lucide `Search` 16px).
-- **Notification Inbox:** Discrete bell icon with a subtle unread dot (no garish badges).
+- **Caixa de entrada (D-83):** ícone `Inbox` (não sino) com um ponto discreto de não lidas, sem contador chamativo. Abre um painel preso ao ícone.
 - **User Profile Capsule:** Minimalist avatar, display name, and active connection status dot (heartbeat / WebSocket live indicator).
 
 ---
@@ -39,8 +39,8 @@ The top-right corner is dedicated strictly to personal operator controls:
 At the header of the Clients section in the sidebar, an options trigger button (`LucideListFilter` / `LucideSlidersHorizontal`) opens a floating context popover with two independent controls:
 
 1. **Agrupar Por (`Group By`):**
-   - **Por Tipo de Serviço:** Assessoria Completa, Implantação/Cadastros, Revisão de Tarifários, etc.
-   - **Por Status Operacional:** Ativo, Em Implantação, Homologado.
+   - **Por Serviço:** os serviços do catálogo (D-15: Assessoria, Central de Reservas, Cadastro/Revisão, Consultoria).
+   - **Por Status do cliente:** Ativo, Pausado, Inativo (D-26).
    - **Sem Agrupamento:** Lista contínua unificada.
 2. **Classificar Por (`Sort By`):**
    - **Últimas Alterações (`Last Updated`):** Mostra primeiro os hotéis com atualizações recentes.
@@ -53,7 +53,8 @@ At the header of the Clients section in the sidebar, an options trigger button (
 - **Label:** `13px` medium text, tracking `-0.012em`.
 - **Selection State:** Translucent soft pill (`bg-white/[0.08]` in dark mode) identical to the Antigravity active thread pill.
 
-### 3.3 Bottom-Left Anchored Navigation (Sidebar Footer)
-The bottom-left zone of the sidebar is permanently anchored for global administrative tools, ensuring they never scroll away:
-- `Painel Administrativo` (`LucideShield` 18px, restricted to system managers).
-- `Configurações` (`LucideSettings` 18px, instance settings, channel catalogs, white-label configs).
+### 3.3 Navegação fixa no topo da sidebar (D-82)
+- Início (`Home`), Demandas (`ClipboardList`), Clientes (`Building2`), Cadastros (`Rocket`), ícones 18px. Cada item abre (ou foca) a aba do módulo.
+
+### 3.4 Rodapé da sidebar
+- `Configurações` (`Settings` 18px), só para Administrador (configuracoes-design-v2.md). Não existe "Painel Administrativo" separado; Minha Conta fica no menu do avatar.

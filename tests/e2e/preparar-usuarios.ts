@@ -40,10 +40,11 @@ async function main() {
 
   for (const person of people) {
     const email = `${person.key}@teste.invalid`;
+    const username = `${person.key}.teste`;
     const password = randomBytes(12).toString("base64url");
     const totpSecret = randomBytes(16).toString("hex");
     const created = await auth.api.createUser({
-      body: { email, password, name: person.name, role: person.role, data: { mustChangePassword: false } },
+      body: { email, password, name: person.name, role: person.role, data: { username, mustChangePassword: false } },
     });
     await prisma.twoFactor.create({
       data: {
@@ -55,7 +56,7 @@ async function main() {
       },
     });
     await prisma.user.update({ where: { id: created.user.id }, data: { twoFactorEnabled: true } });
-    users[person.key] = { email, password, name: person.name, totpSecret };
+    users[person.key] = { username, email, password, name: person.name, totpSecret };
   }
 
   // Membro recém-criado, ainda no primeiro acesso (senha temporária, sem autenticador).
@@ -67,10 +68,16 @@ async function main() {
       password: tempPassword,
       name: "Nina Nova",
       role: ROLES.administrador,
-      data: { mustChangePassword: true, tempPasswordExpiresAt: tempPasswordExpiry() },
+      data: { username: "novo.teste", mustChangePassword: true, tempPasswordExpiresAt: tempPasswordExpiry() },
     },
   });
-  users.novo = { email: "novo@teste.invalid", password: tempPassword, name: "Nina Nova", totpSecret: "" };
+  users.novo = {
+    username: "novo.teste",
+    email: "novo@teste.invalid",
+    password: tempPassword,
+    name: "Nina Nova",
+    totpSecret: "",
+  };
 
   mkdirSync("test-results", { recursive: true });
   writeFileSync(CREDENTIALS_FILE, JSON.stringify(users), "utf8");

@@ -12,6 +12,7 @@ import { motionSprings } from "@/lib/motion";
 import { authClient } from "../auth-client";
 import { PasswordInput } from "./password-input";
 import { useHydrated } from "@/lib/use-hydrated";
+import { normalizeUsername } from "../username";
 
 const TEMP_PASSWORD_EXPIRED = "SENHA_TEMPORARIA_EXPIRADA";
 
@@ -42,8 +43,8 @@ export function LoginForm({ instanceName }: { instanceName: string }) {
     setPending(true);
     setError(null);
 
-    const { data, error: signInError } = await authClient.signIn.email({
-      email: String(form.get("email") ?? ""),
+    const { data, error: signInError } = await authClient.signIn.username({
+      username: normalizeUsername(String(form.get("username") ?? "")),
       password: String(form.get("password") ?? ""),
     });
 
@@ -54,8 +55,8 @@ export function LoginForm({ instanceName }: { instanceName: string }) {
       if (signInError.status === 429) {
         return fail("Muitas tentativas seguidas. Aguarde um minuto e tente de novo.");
       }
-      // Mensagem genérica: não revela se o erro foi no e-mail ou na senha.
-      return fail("E-mail ou senha incorretos.");
+      // Mensagem genérica: não revela se o erro foi no usuário ou na senha.
+      return fail("Usuário ou senha incorretos.");
     }
 
     if (data && "twoFactorRedirect" in data && data.twoFactorRedirect) {
@@ -102,8 +103,18 @@ export function LoginForm({ instanceName }: { instanceName: string }) {
             <h1 className="text-lg font-semibold text-ink">
               {instanceName ? `Entrar no ${instanceName}` : "Entrar"}
             </h1>
-            <Field label="E-mail" htmlFor="email">
-              <Input id="email" name="email" type="email" autoComplete="username" required autoFocus />
+            <Field label="Usuário" htmlFor="username">
+              <Input
+                id="username"
+                name="username"
+                type="text"
+                autoComplete="username"
+                autoCapitalize="none"
+                autoCorrect="off"
+                spellCheck={false}
+                required
+                autoFocus
+              />
             </Field>
             <Field label="Senha" htmlFor="password">
               <PasswordInput id="password" name="password" autoComplete="current-password" required />

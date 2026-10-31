@@ -35,6 +35,15 @@ import { Skeleton, SkeletonRow } from "@/components/ui/skeleton";
 import { ComingSoon } from "@/components/ui/coming-soon";
 import { CodeInput } from "@/components/ui/input-otp";
 import { Kbd } from "@/components/ui/kbd";
+import {
+  Command,
+  CommandEmpty,
+  CommandGroup,
+  CommandInput,
+  CommandItem,
+  CommandList,
+  CommandShortcut,
+} from "@/components/ui/command";
 import { Dialog, DialogBody, DialogContent, DialogHeader, DialogTrigger } from "@/components/ui/dialog";
 import { Drawer } from "@/components/ui/drawer";
 import { useTheme } from "@/features/settings/use-theme";
@@ -92,6 +101,7 @@ function ThemePanel({ theme, title }: { theme: "dark" | "light"; title: string }
       <Segmented />
       <Loading />
       <Code />
+      <CommandDemo />
       <Overlays />
       <ComingSoon
         title="Checklist de onboarding"
@@ -286,6 +296,30 @@ function Code() {
         Nova demanda <Kbd>C</Kbd> · Salvar <Kbd>Ctrl</Kbd>
         <Kbd>S</Kbd> · Código <span className="font-mono text-ink">#DEM-0042</span>
       </p>
+    </Section>
+  );
+}
+
+function CommandDemo() {
+  return (
+    <Section title="Lista de comandos (base do Ctrl+K)">
+      <div className="max-w-lg overflow-hidden rounded-xl border border-line-medium bg-surface-elevated">
+        <Command>
+          <CommandInput placeholder="Buscar ou executar um comando" aria-label="Buscar no exemplo" />
+          <CommandList>
+            <CommandEmpty>Nada encontrado.</CommandEmpty>
+            <CommandGroup heading="Ir para">
+              <CommandItem value="demandas exemplo">
+                <FileText aria-hidden /> Demandas
+              </CommandItem>
+              <CommandItem value="nova aba exemplo">
+                <Plus aria-hidden /> Nova aba
+                <CommandShortcut>Alt+T</CommandShortcut>
+              </CommandItem>
+            </CommandGroup>
+          </CommandList>
+        </Command>
+      </div>
     </Section>
   );
 }

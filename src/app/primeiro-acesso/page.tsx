@@ -24,5 +24,5 @@ async function FirstAccessGate() {
   if (!session) redirect("/entrar");
   const { user } = session;
   if (!user.mustChangePassword && user.twoFactorEnabled) redirect("/");
-  return <FirstAccess email={user.email} needsPassword={!!user.mustChangePassword} />;
+  return <FirstAccess username={user.username ?? ""} needsPassword={!!user.mustChangePassword} />;
 }

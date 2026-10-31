@@ -15,5 +15,6 @@ export default defineConfig({
       VAULT_ENCRYPTION_KEY_V1: "",
     },
     fileParallelism: false,
+    globalSetup: ["./tests/vitest-setup.ts"],
   },
 });

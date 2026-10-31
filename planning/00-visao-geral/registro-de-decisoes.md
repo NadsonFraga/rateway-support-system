@@ -123,7 +123,7 @@ Decisões de produto e de design tomadas durante o planejamento. Cada entrada re
 | D-58 | Configurações ganham seções para itens criados no planejamento: Identificadores (máscara, palavras ignoradas, prefixo de demanda), Catálogo com PMS, Serviços e Mensagens (template de cobrança). Etapas dos Cadastros ficam "Em breve". | Cada configuração decidida precisa de um lugar para ser editada. |
 | D-59 | Atalho padrão de nova demanda: `C`. | Padrão do Linear; já estava no mapa de atalhos. |
 | D-60 | Nenhum toast flutuante: confirmação de salvar acontece no próprio botão ("Salvo" com check). | Lei Zero Floating. |
-| D-61 | Tela de login com **e-mail e senha no mesmo formulário**, compatível com o Gerenciador de Senhas do Google (atributos `autocomplete` corretos), e "Sair" sempre visível no menu do avatar. | Vários colaboradores usam o mesmo computador e o preenchimento automático do Google. |
+| D-61 | *(Ajustada por D-85)* Tela de login com **e-mail e senha no mesmo formulário**, compatível com o Gerenciador de Senhas do Google (atributos `autocomplete` corretos), e "Sair" sempre visível no menu do avatar. | Vários colaboradores usam o mesmo computador e o preenchimento automático do Google. |
 | D-62 | **Criação de usuário:** o Administrador cria o membro e o sistema mostra uma **senha temporária** (válida por 48h) para o admin repassar. No primeiro acesso: troca obrigatória de senha + configuração do Google Authenticator. Esquecimento de senha usa o mesmo fluxo. Convite por e-mail fica para quando houver serviço de envio de e-mail. | Não depende de infraestrutura de e-mail na Fase 1; equipe pequena. |
 
 ## 30/10/2026 — Demandas, Tempo Real e Edição (Estruturação em Fases)
@@ -153,3 +153,13 @@ Decisões de produto e de design tomadas durante o planejamento. Cada entrada re
 | D-78 | Senha de cada colaborador com **no mínimo 8 caracteres**. | Fácil de digitar e compatível com o Gerenciador de Senhas do Google; o Google Authenticator completa a proteção. |
 | D-79 | Drawer lateral (demandas e demais painéis) com **largura fixa de 560px**, ancorado à direita. | Deixa a lista visível ao lado em telas Full HD e ultrawide. |
 | D-80 | **Nova paleta.** Escuro em **grafite neutro** (fundo `#1c1c1d`), claro em **cinza com menos luz** (fundo `#e3e3e3`, cartões `#ececec`). Status e vermelho em **tons suaves**, mantendo o significado de cada cor (D-02). Substitui as paletas obsidiana `#08080a` e ardósia `#f7f8fa` (D-01, D-05) e os tons da matriz em `design-tokens-and-laws.md`. Destaque continua monocromático (D-28). | O usuário achou o escuro preto demais, o claro branco demais e as cores de status e o vermelho chamativos demais. Escolhido entre opções comparadas lado a lado; todo texto passa no contraste WCAG AA. |
+
+## 31/10/2026 — Casca e Navegação (Etapa 1.1)
+
+| # | Decisão | Motivo |
+| :--- | :--- | :--- |
+| D-81 | Atalhos das abas: **Alt+T** nova aba, **Alt+W** fechar, **Alt+.** próxima, **Alt+,** anterior. `Ctrl+K` continua sendo a busca. Substitui Ctrl+T, Ctrl+W, Ctrl+Tab e Ctrl+Shift+Tab da spec de abas. | O Chrome reserva os atalhos com Ctrl para as abas dele (Ctrl+W fecharia a aba do navegador). A equipe usa notebook, sem PageUp/PageDown. |
+| D-82 | A sidebar tem uma **lista fixa no topo** com Início, Demandas, Clientes e Cadastros (ícones 18px); abaixo, a árvore de clientes; no rodapé, Configurações (só Administrador). | A spec da casca não dizia por onde abrir os módulos. |
+| D-83 | Notificações ficam numa **caixa de entrada** (ícone `Inbox`, não sino). O painel abre preso ao ícone (não é toast): linhas de 44px, ponto de não lida monocromático, "Marcar todas como lidas"; clicar abre a aba certa. | Escolha do usuário. |
+| D-84 | O navegador **lembra as abas abertas** e as reabre no F5 ou no dia seguinte. Rascunhos não salvos sobrevivem só à troca de aba, não ao F5 (D-64). | Não perder o contexto de trabalho. |
+| D-85 | **Login por usuário.** Cada conta tem e-mail, usuário e senha; a tela de login pede **usuário + senha** e depois o código do Google Authenticator (D-55 continua). Usuário livre, definido pelo Administrador: minúsculas sem acento, números e ponto (ponto só entre letras ou números), de 3 a 30 caracteres; ao entrar, maiúsculas não importam. O e-mail não serve para entrar; fica para o futuro "Esqueci minha senha" (Fase 3). Ajusta D-61 (o resto dela continua). | Mais prático para a equipe entrar só com usuário e senha. |

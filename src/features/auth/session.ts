@@ -8,6 +8,7 @@ import type { Role } from "./permissions";
 export type CurrentUser = {
   id: string;
   name: string;
+  username: string;
   email: string;
   role: Role;
 };
@@ -29,5 +30,11 @@ export async function requireUser(): Promise<CurrentUser> {
   const { user } = session;
   if (user.mustChangePassword || !user.twoFactorEnabled) redirect("/primeiro-acesso");
 
-  return { id: user.id, name: user.name, email: user.email, role: user.role as Role };
+  return {
+    id: user.id,
+    name: user.name,
+    username: user.username ?? "",
+    email: user.email,
+    role: user.role as Role,
+  };
 }

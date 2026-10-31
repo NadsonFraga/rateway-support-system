@@ -21,7 +21,8 @@ export default defineConfig({
   },
   projects: [{ name: "chromium", use: { ...devices["Desktop Chrome"], viewport: { width: 1920, height: 1080 } } }],
   webServer: {
-    command: "npx tsx server.ts",
+    // Começa de uma compilação limpa: restos da versão anterior quebravam a primeira rodada.
+    command: "node -e \"require('fs').rmSync('.next-e2e',{recursive:true,force:true})\" && npx tsx server.ts",
     url: `${BASE_URL}/api/auth/ok`,
     timeout: 180_000,
     reuseExistingServer: false,

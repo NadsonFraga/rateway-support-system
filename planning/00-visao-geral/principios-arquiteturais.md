@@ -8,7 +8,7 @@ O código-fonte do repositório NÃO deve conter referências engessadas a empre
   - `Entity` ou `Client` em vez de referências corporativas fixas.
   - `IntegrationTarget` ou `Channel` em vez de listas estáticas de canais.
   - `PipelineStage` em vez de etapas de implantação travadas no código.
-- **Configuração Dinâmica da Instância:** Nome da plataforma, paleta de cores e logotipos são carregados a partir da tabela de configurações globais (`system_settings`) no banco de dados.
+- **Configuração Dinâmica da Instância:** Nome da plataforma e logotipos são carregados a partir da tabela de configurações globais (`system_settings`) no banco de dados. A paleta é fixa e monocromática para todas as instâncias (D-28, D-53).
 
 ### 1.2 Modularidade por Domínio (Feature-First)
 A aplicação organiza seus arquivos em torno dos domínios de negócio, e não apenas em pastas técnicas genéricas:
@@ -32,12 +32,13 @@ Inspirado na usabilidade de navegadores e do Obsidian, alternar entre abas não 
 | :--- | :--- | :--- |
 | **Frontend Framework** | **Next.js (React / App Router)** | Suporte completo a Server Components, SSR para carregamento instantâneo e Server Actions unificadas. |
 | **Estilização e Primitivas** | **Tailwind CSS + Shadcn UI (Radix UI)** | Base sem estilo padrão engessado com controle absoluto do código-fonte para implementar o design system. |
-| **Física e Microinterações** | **Framer Motion** | Transições orgânicas com física de mola (*spring physics*) para painéis laterais e pílulas flutuantes. |
+| **Física e Microinterações** | **Framer Motion** | Transições orgânicas com física de mola (*spring physics*) para painéis laterais, indicadores de abas e microinterações. Pacote atual: `motion` (novo nome do Framer Motion). |
 | **Ícones** | **Lucide Icons** | Conjunto moderno e geométrico, alinhado à linguagem visual do Linear e Windows 11. |
 | **Gerenciamento de Estado** | **Zustand** | Store reativa, leve e sem boilerplate para abas abertas, drawer ativo e preferências de interface. |
-| **Banco de Dados e ORM** | **PostgreSQL + Prisma / Drizzle** | Integridade relacional estrita para clientes, demandas e checklists com tipagem de ponta a ponta. |
+| **Banco de Dados e ORM** | **PostgreSQL + Prisma** (D-76) | Integridade relacional estrita para clientes, demandas e checklists com tipagem de ponta a ponta. |
+| **Autenticação** | **Better Auth** (D-76) | Login com e-mail, senha e Google Authenticator (TOTP), perfis e expiração de sessão (D-73). |
 | **Criptografia do Cofre** | **Node.js Crypto (AES-256-GCM)** | Padrão auditável de autenticação e criptografia em repouso para credenciais de canais. |
-| **Comunicação em Tempo Real** | **WebSockets / Server-Sent Events (SSE)** | Notificações imediatas de novas demandas, ciência em tempo real e atualização do mural de avisos. |
+| **Comunicação em Tempo Real** | **Socket.IO (WebSocket) + PostgreSQL LISTEN/NOTIFY**, servidor próprio na VPS (D-63, D-75) | Toda alteração salva chega a todos em menos de 1s; presença e detecção de desconexão para a trava de edição (D-65). |
 
 ---
 

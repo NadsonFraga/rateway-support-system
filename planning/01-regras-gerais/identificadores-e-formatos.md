@@ -41,7 +41,7 @@ Cada tipo de entidade tem sua própria máscara e seu próprio contador. Isso im
 
 1. O sistema **sugere** a sigla a partir das iniciais do nome fantasia, ignorando palavras genéricas configuráveis (`Hotel`, `Pousada`, `Resort`, `de`, `do`, `dos`, `da`, `das`, `e`).
    - *Senhor dos Trilhos* → `ST`; se a sugestão tiver menos de 3 letras, o analista completa (ex.: `SDT`).
-2. Formato: 2 a 4 letras maiúsculas, sem acentos.
+2. Formato: 3 a 4 letras maiúsculas, sem acentos (D-74).
 3. O analista pode **editar a sugestão antes de salvar**.
 4. Após salvar, o `display_code` é **imutável**, porque ele já circula em mensagens, planilhas e tickets. Corrigir um código exige ação do administrador.
 

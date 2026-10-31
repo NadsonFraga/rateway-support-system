@@ -1,0 +1,6 @@
+# Padroniza o fim de linha (LF) no repositório, independente do sistema operacional.
+* text=auto eol=lf
+*.png binary
+*.jpg binary
+*.ico binary
+*.woff2 binary

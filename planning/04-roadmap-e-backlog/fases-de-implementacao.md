@@ -1,6 +1,6 @@
 # Fases de Implementação
 
-Estrutura oficial de construção do sistema, montada a partir das especificações de design v2 e do `00-visao-geral/registro-de-decisoes.md` (D-01 a D-70). Cada etapa só começa quando as etapas de que depende estiverem prontas.
+Estrutura oficial de construção do sistema, montada a partir das especificações de design v2 e do `00-visao-geral/registro-de-decisoes.md` (todas as decisões do registro). Cada etapa só começa quando as etapas de que depende estiverem prontas.
 
 ---
 
@@ -21,7 +21,7 @@ Construir primeiro o que os outros módulos usam:
 | Entrega | Referência |
 | :--- | :--- |
 | Projeto Next.js (App Router) + Tailwind + componentes Radix/Shadcn + Framer Motion + Zustand | `principios-arquiteturais.md` |
-| PostgreSQL + ORM (Prisma ou Drizzle, escolher no início) | `principios-arquiteturais.md` |
+| PostgreSQL + Prisma (D-76) | `principios-arquiteturais.md` |
 | Tokens de cor, tipografia e molas nos dois temas, como variáveis CSS | `design-tokens-and-laws.md` |
 | Componentes-base: linha de 44px, micro-dot, botões (primário monocromático, fantasma), campos, menus ancorados, tooltip, drawer, modal, controle segmentado, esqueleto de carregamento, bloco "Em breve" | Specs v2 de todos os módulos |
 | Login: e-mail + senha + Google Authenticator, senha temporária (48h) com troca obrigatória, 3 perfis, sessão que expira, compatível com o Gerenciador de Senhas do Google | D-54 a D-56, D-61, D-62 |

@@ -1,0 +1,154 @@
+// Estrutura do banco. Cada mudança aqui vira uma migração (prisma/migrations) aplicada com segurança.
+
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+/// Configurações da instância (white-label): nome, logos e formatos de código vêm daqui, nunca do código.
+model InstanceSettings {
+  id             String   @id @default("instancia")
+  name           String
+  logoDarkUrl    String?
+  logoLightUrl   String?
+  faviconUrl     String?
+  /// Prefixo das demandas (padrão DEM). Nenhuma sigla de cliente pode ser igual a ele.
+  demandPrefix   String   @default("DEM")
+  clientCodeMask String   @default("{SIGLA}-{SEQ:3}")
+  demandCodeMask String   @default("{PREFIXO}-{SEQ:4}")
+  /// Palavras ignoradas ao sugerir a sigla do cliente.
+  ignoredWords   String[] @default(["Hotel", "Pousada", "Resort", "de", "do", "dos", "da", "das", "e"])
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  @@map("system_settings")
+}
+
+/// Contadores dos códigos legíveis, um por tipo de entidade e escopo (sigla do cliente ou "global").
+model IdSequence {
+  entityType String
+  scope      String
+  lastValue  Int    @default(0)
+
+  @@id([entityType, scope])
+  @@map("id_sequences")
+}
+
+/// Trava de edição: no máximo uma linha por registro (o primeiro a gravar vence).
+model EditLock {
+  entityType      String
+  entityId        String
+  userId          String
+  acquiredAt      DateTime @default(now())
+  lastHeartbeatAt DateTime @default(now())
+  lastActivityAt  DateTime @default(now())
+  user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@id([entityType, entityId])
+  @@index([userId])
+  @@map("edit_locks")
+}
+
+/// Registro de teste da Etapa 1.0: prova do tempo real e da trava em /dev/tempo-real.
+model RealtimeProbe {
+  id          String   @id @default("teste")
+  text        String   @default("")
+  updatedById String?
+  updatedAt   DateTime @updatedAt
+
+  @@map("realtime_probe")
+}
+
+// --- Login (Better Auth: e-mail, senha, Google Authenticator e perfis). Gerado pela ferramenta "auth generate". ---
+
+model User {
+  id                    String      @id
+  name                  String
+  email                 String
+  emailVerified         Boolean     @default(false)
+  image                 String?
+  createdAt             DateTime    @default(now())
+  updatedAt             DateTime    @updatedAt
+  twoFactorEnabled      Boolean?    @default(false)
+  role                  String?
+  banned                Boolean?    @default(false)
+  banReason             String?
+  banExpires            DateTime?
+  mustChangePassword    Boolean?    @default(false)
+  tempPasswordExpiresAt DateTime?
+  sessions              Session[]
+  accounts              Account[]
+  twofactors            TwoFactor[]
+  editLocks             EditLock[]
+
+  @@unique([email])
+  @@map("user")
+}
+
+model Session {
+  id             String   @id
+  expiresAt      DateTime
+  token          String
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+  ipAddress      String?
+  userAgent      String?
+  userId         String
+  user           User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  impersonatedBy String?
+
+  @@unique([token])
+  @@index([userId])
+  @@map("session")
+}
+
+model Account {
+  id                    String    @id
+  accountId             String
+  providerId            String
+  userId                String
+  user                  User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  accessToken           String?
+  refreshToken          String?
+  idToken               String?
+  accessTokenExpiresAt  DateTime?
+  refreshTokenExpiresAt DateTime?
+  scope                 String?
+  password              String?
+  createdAt             DateTime  @default(now())
+  updatedAt             DateTime  @updatedAt
+
+  @@index([userId])
+  @@map("account")
+}
+
+model Verification {
+  id         String   @id
+  identifier String
+  value      String
+  expiresAt  DateTime
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  @@index([identifier])
+  @@map("verification")
+}
+
+model TwoFactor {
+  id                      String    @id
+  secret                  String
+  backupCodes             String
+  userId                  String
+  user                    User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  verified                Boolean?  @default(true)
+  failedVerificationCount Int?      @default(0)
+  lockedUntil             DateTime?
+
+  @@index([secret])
+  @@index([userId])
+  @@map("twoFactor")
+}

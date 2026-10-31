@@ -3,6 +3,7 @@ node_modules/
 
 # Build do Next.js
 .next/
+.next-e2e/
 out/
 build/
 
@@ -36,3 +37,6 @@ desktop.ini
 
 # Configurações locais do Claude Code
 .claude/settings.local.json
+
+# Código gerado pelo Prisma (recriado com `npx prisma generate`)
+/src/generated/

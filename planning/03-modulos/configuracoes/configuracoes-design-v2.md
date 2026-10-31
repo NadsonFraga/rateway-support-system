@@ -96,7 +96,7 @@ Login próprio com e-mail, senha e Google Authenticator (D-55), usando uma solu�
   - nunca dividir em duas telas (primeiro e-mail, depois senha);
   - definir senha (primeiro acesso ou troca) com `autocomplete="new-password"`, para o Google oferecer salvar a senha nova;
   - código do autenticador com `autocomplete="one-time-code"` e `inputmode="numeric"`.
-- **Computador compartilhado:** "Sair" fica visível no menu do avatar (ícone `LogOut` 16px), e a sessão expira após um período sem uso, para um colaborador não continuar logado na conta de outro.
+- **Computador compartilhado:** "Sair" fica visível no menu do avatar (ícone `LogOut` 16px), e a sessão expira após 2 horas sem uso, com limite máximo de 12 horas (D-73), para um colaborador não continuar logado na conta de outro.
 - **Fundo:** `--bg-app`; cartão central de 380px, `--bg-surface`, borda `--border-subtle`, `rounded-2xl`, padding 32px. Sem ilustrações.
 - **Entrar:** botão primário monocromático de largura total, 40px. Durante a verificação, o rótulo dá lugar a um indicador de carregamento discreto (sem mudar a largura).
 - **Erro:** mensagem genérica em coral 13px abaixo do botão ("E-mail ou senha incorretos"), sem revelar qual dos dois está errado; o cartão faz um leve deslocamento horizontal (mola `taptic`, 4px).

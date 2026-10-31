@@ -1,0 +1,114 @@
+/*
+ * Tokens de design — cópia fiel de planning/01-regras-gerais/design-tokens-and-laws.md (canônico).
+ * Paleta D-80: grafite neutro no escuro, cinza com menos luz no claro, status em tons suaves.
+ * Nenhum componente escreve cor direto: tudo passa por estas variáveis.
+ * Mudou o documento canônico? Mude aqui, e só aqui.
+ */
+
+:root,
+[data-theme="dark"] {
+  color-scheme: dark;
+
+  /* Superfícies */
+  --bg-app: #1c1c1d;
+  --bg-sidebar: #171718;
+  --bg-surface: #232324;
+  --bg-surface-elevated: #2a2a2c;
+  --bg-surface-hover: #2e2e30;
+  --bg-surface-active: #363638;
+
+  /* Bordas translúcidas */
+  --border-subtle: rgba(255, 255, 255, 0.07);
+  --border-medium: rgba(255, 255, 255, 0.12);
+  --border-strong: rgba(255, 255, 255, 0.2);
+  --border-focus: rgba(255, 255, 255, 0.5);
+
+  /* Texto */
+  --text-primary: #e7e7e8;
+  --text-secondary: #acacb0;
+  --text-muted: #98989d;
+  --text-inverse: #1c1c1d;
+
+  /* Destaque monocromático (lei Anti-Arco-Íris, D-28) */
+  --accent-primary: #e7e7e8;
+  --accent-hover: #f5f5f6;
+  --accent-subdued: rgba(255, 255, 255, 0.07);
+
+  /* Cores de fato em tom suave: coral (atrasado, erro, remover) e âmbar (prazo) */
+  --fact-coral: #d89585;
+  --fact-amber: #d4b170;
+
+  /* Matriz de status canônica — micro-dots */
+  --dot-andamento: #9a9a9f;
+  --dot-aguardando: #7fa3c3;
+  --dot-prazo: #c9a25b;
+  --dot-atrasada: #c98a7a;
+  --dot-concluida: #86ad8f;
+
+  /* Matriz de status canônica — badges */
+  --status-andamento-text: #a6a6aa;
+  --status-andamento-bg: rgba(166, 166, 170, 0.13);
+  --status-andamento-border: rgba(166, 166, 170, 0.22);
+  --status-aguardando-text: #8fb0cc;
+  --status-aguardando-bg: rgba(143, 176, 204, 0.13);
+  --status-aguardando-border: rgba(143, 176, 204, 0.22);
+  --status-prazo-text: #d4b170;
+  --status-prazo-bg: rgba(212, 177, 112, 0.13);
+  --status-prazo-border: rgba(212, 177, 112, 0.22);
+  --status-atrasada-text: #d89585;
+  --status-atrasada-bg: rgba(216, 149, 133, 0.13);
+  --status-atrasada-border: rgba(216, 149, 133, 0.22);
+  --status-concluida-text: #93b89b;
+  --status-concluida-bg: rgba(147, 184, 155, 0.13);
+  --status-concluida-border: rgba(147, 184, 155, 0.22);
+}
+
+[data-theme="light"] {
+  color-scheme: light;
+
+  --bg-app: #e3e3e3;
+  --bg-sidebar: #dcdcdc;
+  --bg-surface: #ececec;
+  --bg-surface-elevated: #f2f2f2;
+  --bg-surface-hover: #dadada;
+  --bg-surface-active: #d0d0d0;
+
+  --border-subtle: rgba(0, 0, 0, 0.1);
+  --border-medium: rgba(0, 0, 0, 0.16);
+  --border-strong: rgba(0, 0, 0, 0.26);
+  --border-focus: rgba(0, 0, 0, 0.55);
+
+  --text-primary: #1a1a1a;
+  --text-secondary: #454545;
+  --text-muted: #5c5c5c;
+  --text-inverse: #ececec;
+
+  --accent-primary: #262626;
+  --accent-hover: #3a3a3a;
+  --accent-subdued: rgba(0, 0, 0, 0.06);
+
+  --fact-coral: #864033;
+  --fact-amber: #6f5317;
+
+  --dot-andamento: #7c7c80;
+  --dot-aguardando: #4f7899;
+  --dot-prazo: #a57f2e;
+  --dot-atrasada: #b0614f;
+  --dot-concluida: #5d8a68;
+
+  --status-andamento-text: #454545;
+  --status-andamento-bg: #d6d6d6;
+  --status-andamento-border: rgba(0, 0, 0, 0.08);
+  --status-aguardando-text: #365670;
+  --status-aguardando-bg: #d0d9df;
+  --status-aguardando-border: rgba(54, 86, 112, 0.18);
+  --status-prazo-text: #6f5317;
+  --status-prazo-bg: #e0d6c0;
+  --status-prazo-border: rgba(111, 83, 23, 0.18);
+  --status-atrasada-text: #864033;
+  --status-atrasada-bg: #e4d1cb;
+  --status-atrasada-border: rgba(134, 64, 51, 0.18);
+  --status-concluida-text: #3b6044;
+  --status-concluida-bg: #cfdacf;
+  --status-concluida-border: rgba(59, 96, 68, 0.18);
+}

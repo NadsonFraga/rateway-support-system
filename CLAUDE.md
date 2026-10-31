@@ -9,7 +9,7 @@ Este arquivo é lido automaticamente pelo Claude Code em toda conversa. Ele defi
 Painel desktop (navegador, telas Full HD e ultrawide) para a operação interna de uma empresa de gestão hoteleira: demandas da equipe, ficha de clientes (hotéis), cofre de acessos de canais de venda (Booking, Airbnb, Expedia…), esteira de cadastros e tela de início. Motor **100% white-label**: nenhum nome de empresa, cliente ou canal fixo no código.
 
 ### Fontes da verdade (ordem de prioridade)
-1. `planning/00-visao-geral/registro-de-decisoes.md` — decisões numeradas (D-01 em diante), com motivo. **Vence qualquer outro arquivo.**
+1. `planning/00-visao-geral/registro-de-decisoes.md` — todas as decisões do registro, com motivo. **Vence qualquer outro arquivo.**
 2. Specs de design v2 de cada módulo:
    - `planning/03-modulos/clientes/clientes-design-v2.md`
    - `planning/03-modulos/cadastros/cadastros-design-v2.md`
@@ -73,9 +73,9 @@ Regras do HARD STOP:
 
 Detalhes em `design-tokens-and-laws.md`. Resumo:
 
-- **Estética:** fusão de Linear + Antigravity IDE + Windows 11. Obsidiana profunda no escuro (`#08080a`), ardósia clara no claro (`#f7f8fa`). **Não trocar a paleta.**
+- **Estética:** fusão de Linear + Antigravity IDE + Windows 11. Grafite neutro no escuro (`#1c1c1d`), cinza com menos luz no claro (`#e3e3e3`), status em tons suaves (D-80). **Não trocar a paleta sem decisão registrada.**
 - **Anti-Arco-Íris (95% monocromático):** sem azul, verde ou violeta de marca em botões. Botão primário é **monocromático** (`--accent-primary`). Seleção e foco também monocromáticos.
-- **Cor só para fatos:** a matriz de status canônica (cinza = em andamento, azul = aguardando retorno, âmbar = prazo < 24h em Demandas / ≤ 3 dias em Cadastros e Implantação (D-71), coral = atrasada/crítica, verde = concluída, só no histórico). Fases de serviço e situação de canal **não têm cor** (ícone + brilho).
+- **Cor só para fatos:** a matriz de status canônica (tons suaves, D-80: cinza = em andamento, azul = aguardando retorno, âmbar = prazo < 24h em Demandas / ≤ 3 dias em Cadastros e Implantação (D-71), coral = atrasada/crítica, verde = concluída, só no histórico). Fases de serviço e situação de canal **não têm cor** (ícone + brilho).
 - **Micro-dots de 6px** em CSS puro (`w-1.5 h-1.5 rounded-full`), sempre com rótulo acessível e tooltip.
 - **Zero emojis** na interface e no código de interface. Ícones **Lucide**, traço `1.75px`, 18–20px em navegação, 16px em linhas.
 - **Escala ergonômica:** linhas de tabela/lista com **44px**; texto base **14–15px**.

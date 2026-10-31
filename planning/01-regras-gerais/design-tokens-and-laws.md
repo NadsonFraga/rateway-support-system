@@ -35,86 +35,65 @@ When any view containing metrics, timelines, or progress bars opens, components 
 
 ## 2. Color Tokens & Elevation Levels
 
-### 2.1 Dark Mode (Deep Obsidian Canvas)
+> **D-80 (31/10/2026):** paleta trocada a pedido do usuário. O escuro obsidiana (`#08080a`) era preto demais e o claro (`#f7f8fa`) claro demais; os status e o vermelho eram chamativos demais. Valores abaixo conferidos por cálculo: todo texto passa de 4,5:1 nos dois temas.
+
+### 2.1 Dark Mode (Grafite neutro)
 ```css
-:root[data-theme="dark"] {
-  /* Canvas & Structural Surfaces */
-  --bg-app: #08080a;                  /* Deepest Obsidian base */
-  --bg-sidebar: #0d0d10;              /* Reflect-style quiet sidebar */
-  --bg-surface: #121216;              /* Elevated card / panel */
-  --bg-surface-elevated: #18181e;     /* Popovers, menus, modal dialogs */
-  --bg-surface-hover: #1e1e26;        /* Subtle interactive hover */
-  --bg-surface-active: #262632;       /* Active pressed */
+[data-theme="dark"] {
+  --bg-app: #1c1c1d;  --bg-sidebar: #171718;  --bg-surface: #232324;
+  --bg-surface-elevated: #2a2a2c;  --bg-surface-hover: #2e2e30;  --bg-surface-active: #363638;
 
-  /* Translucent Borders */
-  --border-subtle: rgba(255, 255, 255, 0.07);
-  --border-medium: rgba(255, 255, 255, 0.12);
-  --border-strong: rgba(255, 255, 255, 0.20);
-  --border-focus: rgba(255, 255, 255, 0.50);   /* 5.3:1 sobre --bg-app (WCAG 2.2 — foco visível ≥ 3:1) */
+  --border-subtle: rgba(255,255,255,0.07);  --border-medium: rgba(255,255,255,0.12);
+  --border-strong: rgba(255,255,255,0.20);  --border-focus: rgba(255,255,255,0.50);
 
-  /* Typography Hierarchy */
-  --text-primary: #f5f5f7;            /* 96% white - High contrast readability */
-  --text-secondary: #a0a0ab;          /* Soft cool gray - Descriptions & metadata */
-  --text-muted: #84849a;              /* Keyboard badges, hints — 5.48:1 sobre --bg-app (WCAG AA) */
-  --text-inverse: #08080a;
+  --text-primary: #e7e7e8;  --text-secondary: #acacb0;  --text-muted: #98989d;  --text-inverse: #1c1c1d;
 
-  /* Destaque Monocromático (sem cor de marca — lei Anti-Arco-Íris) */
-  --accent-primary: #f5f5f7;                   /* Botão primário: fundo claro, texto --text-inverse */
-  --accent-hover: #ffffff;
-  --accent-subdued: rgba(255, 255, 255, 0.08); /* Seleção ativa (pílula da sidebar, linha selecionada) */
+  /* Destaque monocromático (lei Anti-Arco-Íris) */
+  --accent-primary: #e7e7e8;  --accent-hover: #f5f5f6;  --accent-subdued: rgba(255,255,255,0.07);
+
+  /* Cores de fato em tom suave */
+  --fact-coral: #d89585;  --fact-amber: #d4b170;
 }
 ```
 
-### 2.2 Light Mode (Clean Executive Slate)
+### 2.2 Light Mode (Cinza com menos luz)
 ```css
-:root[data-theme="light"] {
-  /* Canvas & Structural Surfaces */
-  --bg-app: #f7f8fa;                  /* Calibrated warm slate canvas */
-  --bg-sidebar: #f1f3f6;              /* Distinct subtle sidebar */
-  --bg-surface: #ffffff;              /* Pure white elevated cards */
-  --bg-surface-elevated: #ffffff;     /* Dropdown menus & popovers */
-  --bg-surface-hover: #e9ecf1;        /* Smooth hover */
-  --bg-surface-active: #dde1e9;       /* Active pressed */
+[data-theme="light"] {
+  --bg-app: #e3e3e3;  --bg-sidebar: #dcdcdc;  --bg-surface: #ececec;
+  --bg-surface-elevated: #f2f2f2;  --bg-surface-hover: #dadada;  --bg-surface-active: #d0d0d0;
 
-  /* Subtle Borders */
-  --border-subtle: rgba(0, 0, 0, 0.07);
-  --border-medium: rgba(0, 0, 0, 0.12);
-  --border-strong: rgba(0, 0, 0, 0.18);
-  --border-focus: rgba(15, 17, 23, 0.50);      /* 3.5:1 sobre --bg-app (WCAG 2.2 — foco visível ≥ 3:1) */
+  --border-subtle: rgba(0,0,0,0.10);  --border-medium: rgba(0,0,0,0.16);
+  --border-strong: rgba(0,0,0,0.26);  --border-focus: rgba(0,0,0,0.55);
 
-  /* Typography Hierarchy */
-  --text-primary: #0f1117;            /* Deep obsidian ink */
-  --text-secondary: #4b5262;          /* Readable graphite slate */
-  --text-muted: #646c7e;              /* Inactive hints and icons — 4.74:1 sobre --bg-app (WCAG AA) */
-  --text-inverse: #ffffff;
+  --text-primary: #1a1a1a;  --text-secondary: #454545;  --text-muted: #5c5c5c;  --text-inverse: #ececec;
 
-  /* Destaque Monocromático (sem cor de marca — lei Anti-Arco-Íris) */
-  --accent-primary: #0f1117;                   /* Botão primário: fundo escuro, texto --text-inverse */
-  --accent-hover: #262a33;
-  --accent-subdued: rgba(15, 17, 23, 0.06);    /* Seleção ativa */
+  --accent-primary: #262626;  --accent-hover: #3a3a3a;  --accent-subdued: rgba(0,0,0,0.06);
+
+  --fact-coral: #864033;  --fact-amber: #6f5317;
 }
 ```
 
-### 2.3 Operational Status Matrix (Canônica)
-Cores refletem fatos, nunca decoração. Esta tabela é a fonte única para todos os módulos (Demandas, Clientes, Cadastros, Dashboard).
+### 2.3 Operational Status Matrix (Canônica, tons suaves — D-80)
+Cores refletem fatos, nunca decoração. Esta tabela é a fonte única para todos os módulos (Demandas, Clientes, Cadastros, Dashboard). O significado de cada cor não mudou (D-02); só a intensidade.
 
-| Estado Semântico | Badge Dark | Badge Light | Micro-Dot 6px |
+| Estado Semântico | Badge escuro (texto / fundo) | Badge claro (texto / fundo) | Micro-dot escuro / claro |
 | :--- | :--- | :--- | :--- |
-| **Em Andamento (normal)** | `text-zinc-400 bg-zinc-500/10 border-zinc-500/20` | `text-slate-600 bg-slate-100 border-slate-200/80` | `bg-zinc-400` |
-| **Aguardando Retorno** | `text-sky-400 bg-sky-500/10 border-sky-500/20` | `text-sky-700 bg-sky-50 border-sky-200/80` | `bg-sky-400` |
-| **Atenção de Prazo (< 24h)** | `text-amber-400 bg-amber-500/10 border-amber-500/20` | `text-amber-700 bg-amber-50 border-amber-200/80` | `bg-amber-400` |
-| **Atrasada / Crítica** | `text-rose-400 bg-rose-500/10 border-rose-500/20` | `text-rose-700 bg-rose-50 border-rose-200/80` | `bg-rose-400` |
-| **Concluída** (exclusivo do histórico) | `text-emerald-400 bg-emerald-500/10 border-emerald-500/20` | `text-emerald-700 bg-emerald-50 border-emerald-200/80` | `bg-emerald-400` |
+| **Em Andamento (normal)** | `#a6a6aa` / 13% do texto | `#454545` / `#d6d6d6` | `#9a9a9f` / `#7c7c80` |
+| **Aguardando Retorno** | `#8fb0cc` / 13% do texto | `#365670` / `#d0d9df` | `#7fa3c3` / `#4f7899` |
+| **Atenção de Prazo** (D-71) | `#d4b170` / 13% do texto | `#6f5317` / `#e0d6c0` | `#c9a25b` / `#a57f2e` |
+| **Atrasada / Crítica** | `#d89585` / 13% do texto | `#864033` / `#e4d1cb` | `#c98a7a` / `#b0614f` |
+| **Concluída** (exclusivo do histórico) | `#93b89b` / 13% do texto | `#3b6044` / `#cfdacf` | `#86ad8f` / `#5d8a68` |
 
-**Anatomia do Micro-Dot:** `w-1.5 h-1.5 rounded-full shrink-0` (CSS puro, zero emojis).
+No código, cada valor é uma variável (`--status-*`, `--dot-*`) em `src/styles/tokens.css`.
+
+**Anatomia do Micro-Dot:** `w-1.5 h-1.5 rounded-full shrink-0` com a cor de `--dot-*` (CSS puro, zero emojis).
 **Regra de acessibilidade (WCAG 2.2 — 1.4.1 Uso de Cor):** a cor nunca carrega o significado sozinha. Todo dot tem rótulo textual acessível (`aria-label`) e tooltip no hover com o nome do estado.
 
---- | :--- | :--- | :--- |
-| **On Track / Live** | `text-emerald-400 bg-emerald-500/10 border-emerald-500/20` | `text-emerald-700 bg-emerald-50 border-emerald-200/80` | `bg-emerald-400` |
-| **In Progress / Active** | `text-sky-400 bg-sky-500/10 border-sky-500/20` | `text-sky-700 bg-sky-50 border-sky-200/80` | `bg-sky-400` |
-| **At Risk / Review** | `text-amber-400 bg-amber-500/10 border-amber-500/20` | `text-amber-700 bg-amber-50 border-amber-200/80` | `bg-amber-400` |
-| **Off Track / Blocker** | `text-rose-400 bg-rose-500/10 border-rose-500/20` | `text-rose-700 bg-rose-50 border-rose-200/80` | `bg-rose-400` |
-| **Queued / Neutral** | `text-zinc-400 bg-zinc-500/10 border-zinc-500/20` | `text-slate-600 bg-slate-100 border-slate-200/80` | `bg-zinc-400` |
+**Régua do âmbar (D-71):** em Demandas, âmbar = prazo < 24h. Em Cadastros (Fila de prioridades) e nos indicadores de Implantação do Início, âmbar = 3 dias ou menos.
+
+### 2.4 Tipografia (D-72)
+- **Texto:** Inter (variável), embutida no sistema. Números de tabelas e prazos com `tabular-nums`.
+- **Monoespaçada:** JetBrains Mono para códigos (`#HFI-001`), senhas reveladas, IDs de propriedade e teclas de atalho.
 
 ---
 
@@ -188,5 +167,5 @@ export const motionSprings = {
 - **Contextual Side-Widgets:** Clean calendar widget for scheduling deadlines.
 
 ### 4.5 Amie Light Mode (Image 5) -> Rateway Light Mode Architecture
-- **Pure White Cards on Warm Slate Canvas:** Crisp white cards against `#f7f8fa` with zero heavy dark drop-shadows.
+- **Cartões um tom acima do fundo (D-80):** cartões `#ececec` sobre fundo `#e3e3e3`, sem sombras pesadas.
 - **Embedded Action Headers:** Action buttons sit neatly aligned with page headers, not floating randomly over screen content.

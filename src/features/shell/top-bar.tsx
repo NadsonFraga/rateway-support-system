@@ -72,9 +72,10 @@ export function TopBar({
 function Breadcrumb() {
   const tabs = useTabs((state) => state.tabs);
   const activeId = useTabs((state) => state.activeId);
+  const labels = useTabs((state) => state.labels);
   const tab = tabs.find((item) => item.id === activeId);
   if (!tab) return null;
-  const parts = TAB_REGISTRY[tab.kind].breadcrumb(tab);
+  const parts = TAB_REGISTRY[tab.kind].breadcrumb(tab, labels[tab.id]);
 
   return (
     <nav aria-label="Você está em" className="flex min-w-0 items-center gap-1 text-[13px]">

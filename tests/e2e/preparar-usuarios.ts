@@ -19,6 +19,10 @@ async function main() {
   const { symmetricEncrypt } = await import("better-auth/crypto");
 
   await prisma.editLock.deleteMany();
+  await prisma.vaultCredential.deleteMany();
+  await prisma.clientService.deleteMany();
+  await prisma.client.deleteMany();
+  await prisma.idSequence.deleteMany();
   await prisma.catalogItem.deleteMany();
   await prisma.asset.deleteMany();
   await prisma.user.deleteMany({ where: { email: { endsWith: "@teste.invalid" } } });

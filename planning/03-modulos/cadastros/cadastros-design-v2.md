@@ -64,7 +64,7 @@ Estabelecimento                  Booking  Airbnb  Expedia  Decolar  Google  Triv
 ### Interação
 - **Hover na célula:** fundo `--bg-surface-hover` `rounded-md` na célula e destaque sutil (`--bg-surface-hover` com 50% de opacidade) na linha e na coluna inteiras, formando uma cruz que facilita ler hotel × canal.
 - **Clique na célula:** abre menu ancorado à célula (sem flutuar sobre a tela inteira) com as 5 situações (ícone + rótulo), a atual marcada com `Check`. Teclado: `↑`/`↓` e `Enter`; `Esc` fecha. Ao escolher, o ícone da célula troca com escala 0,8→1 (mola `taptic`).
-- **Clique no nome do hotel:** abre a ficha do cliente em nova aba (keep-alive), como em Demandas.
+- **Clique no nome do hotel:** abre a ficha do cliente em nova aba (keep-alive), como em Demandas. *(D-94: clique normal troca a aba atual; Ctrl/Shift/meio abre em aba nova.)*
 - **Clique no cabeçalho de um canal:** filtra a matriz para **hotéis com pendência naquele canal** (situação "A cadastrar" ou "Em andamento"). O filtro aparece como etiqueta removível abaixo da barra ("Pendências: Booking.com ×"). Cabeçalho filtrado fica em `--text-primary` com sublinhado de 2px.
 
 ### Quem aparece
@@ -104,7 +104,7 @@ Fila de trabalho da equipe de implantação, separada das demandas do dia a dia.
 
 ### Interação
 - **Filtros:** botão `ListFilter` abre popover ancorado com Gargalo e Prioridade; filtros ativos viram etiquetas removíveis.
-- **Clique na linha:** abre a ficha do cliente em nova aba.
+- **Clique na linha:** abre a ficha do cliente em nova aba. *(D-94: clique normal troca a aba atual; Ctrl/Shift/meio abre em aba nova.)*
 - **Menu da linha** (`MoreHorizontal` no hover ou clique direito; Analista de Implantação e Administrador): definir prioridade, definir gargalo, editar prazo de entrega (padrão: início do serviço + 30 dias).
 - **Mudança de ordem:** quando uma alteração muda a posição de um hotel, a linha se desloca até o novo lugar com mola (`layout`), sem remontar a lista.
 

@@ -22,14 +22,17 @@ import { Kbd } from "@/components/ui/kbd";
 import { Button } from "@/components/ui/button";
 import { AccountTab } from "@/features/settings/account/account-tab";
 import { SystemSettingsTab } from "@/features/settings/system/settings-tab";
+import { ClientsTab } from "@/features/clients/list/clients-tab";
+import { ClientTab } from "@/features/clients/sheet/client-tab";
 import type { Tab, TabKind } from "./tabs-model";
 import { useCurrentTab, useTabDirty, useTabs } from "./tabs-store";
 
 type TabDefinition = {
   icon: LucideIcon;
-  title: (tab: Tab) => string;
+  /** `label`: nome conhecido só depois de carregar (ex.: nome do cliente). */
+  title: (tab: Tab, label?: string) => string;
   /** Trilha da barra superior (sem o nome da instância). */
-  breadcrumb: (tab: Tab) => string[];
+  breadcrumb: (tab: Tab, label?: string) => string[];
   content: React.ComponentType;
 };
 
@@ -189,7 +192,13 @@ export const TAB_REGISTRY: Record<TabKind, TabDefinition> = {
     icon: Building2,
     title: () => "Clientes",
     breadcrumb: () => ["Clientes"],
-    content: placeholder("Clientes", "Listagem, ficha do cliente e Cofre de acessos chegam na Etapa 1.3."),
+    content: ClientsTab,
+  },
+  cliente: {
+    icon: Building2,
+    title: (tab, label) => label ?? `#${tab.params?.codigo ?? ""}`,
+    breadcrumb: (tab, label) => ["Clientes", label ?? `#${tab.params?.codigo ?? ""}`],
+    content: ClientTab,
   },
   cadastros: {
     icon: Rocket,

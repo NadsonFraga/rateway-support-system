@@ -5,7 +5,7 @@ import { Inbox } from "lucide-react";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
-import { useTabs } from "@/features/shell/tabs-store";
+import { useTabs, wantsNewTab } from "@/features/shell/tabs-store";
 import { useInbox } from "./use-inbox";
 import type { InboxItem } from "./types";
 
@@ -25,12 +25,12 @@ function relativeTime(iso: string) {
 // Caixa de entrada (D-83): painel preso ao ícone, nunca toast. Ponto de não lida monocromático.
 export function InboxButton({ userId }: { userId: string }) {
   const { items, unread, loaded, read, readAll } = useInbox(userId);
-  const openTab = useTabs((state) => state.open);
+  const navigate = useTabs((state) => state.navigate);
   const [open, setOpen] = React.useState(false);
 
-  function select(item: InboxItem) {
+  function select(item: InboxItem, newTab: boolean) {
     if (!item.readAt) read(item.id);
-    if (item.target) openTab(item.target.kind, item.target.params);
+    if (item.target) navigate(item.target.kind, item.target.params, newTab);
     setOpen(false);
   }
 
@@ -63,7 +63,8 @@ export function InboxButton({ userId }: { userId: string }) {
               key={item.id}
               type="button"
               role="listitem"
-              onClick={() => select(item)}
+              onClick={(event) => select(item, wantsNewTab(event))}
+              onAuxClick={(event) => event.button === 1 && select(item, true)}
               className="flex min-h-11 w-full items-start gap-3 border-b border-line-subtle px-4 py-3 text-left last:border-b-0 hover:bg-surface-hover focus-visible:bg-surface-hover"
             >
               <span

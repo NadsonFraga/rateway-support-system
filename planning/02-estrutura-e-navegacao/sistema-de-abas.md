@@ -43,4 +43,5 @@ Os atalhos de navegação não são fixos no código; eles são vinculados a um 
 
 > Ctrl+T, Ctrl+W e Ctrl+Tab são reservados pelo Chrome para as abas do próprio navegador e não podem ser usados (D-81).
 
-5. **Reabrir abas (D-84):** a lista de abas abertas fica guardada no navegador e é reaberta no F5 ou no dia seguinte.
+5. **Clique (D-94):** o clique normal troca o conteúdo da aba atual; Ctrl+clique, Shift+clique ou botão do meio abrem em aba nova. A aba Início e abas com alterações não salvas nunca são substituídas (o destino abre em aba nova).
+6. **Reabrir abas (D-84):** a lista de abas abertas fica guardada no navegador e é reaberta no F5 ou no dia seguinte.

@@ -44,33 +44,114 @@ model Asset {
 
 /// Catálogo da instância: canais de venda, Channel Managers, PMS e serviços internos (white-label).
 model CatalogItem {
-  id          String    @id @default(cuid())
+  id               String            @id @default(cuid())
   /// "canal" | "channel_manager" | "pms" | "servico_interno"
-  category    String
-  name        String
-  logoUrl     String?
-  extranetUrl String?
+  category         String
+  name             String
+  logoUrl          String?
+  extranetUrl      String?
   /// Ordem das colunas na Matriz de Cadastros e no Cofre.
-  position    Int       @default(0)
+  position         Int               @default(0)
   /// Arquivado (D-88): some das listas, continua nos clientes que já usam.
-  archivedAt  DateTime?
-  createdAt   DateTime  @default(now())
-  updatedAt   DateTime  @updatedAt
+  archivedAt       DateTime?
+  createdAt        DateTime          @default(now())
+  updatedAt        DateTime          @updatedAt
+  asChannelManager Client[]          @relation("ClientChannelManager")
+  asPms            Client[]          @relation("ClientPms")
+  credentials      VaultCredential[]
 
   @@index([category, position])
   @@map("catalog_items")
 }
 
+/// Cliente / estabelecimento (clientes-design-v2.md). Status é calculado pelos serviços (D-26), nunca guardado.
+model Client {
+  id               String            @id @default(cuid())
+  /// Código legível imutável (#HFI-001), gerado pelo gerador de IDs.
+  displayCode      String            @unique
+  sigla            String
+  name             String
+  logoUrl          String?
+  city             String?
+  /// UF (duas letras).
+  state            String?
+  website          String?
+  channelManagerId String?
+  pmsId            String?
+  /// Contato principal: "pessoa" (nome + telefone) ou "grupo" (nome + link do grupo de WhatsApp).
+  contactType      String?
+  contactName      String?
+  contactPhone     String?
+  contactLink      String?
+  /// Contato financeiro (cobrança via WhatsApp).
+  financeName      String?
+  financePhone     String?
+  /// Aviso importante (faixa âmbar no cabeçalho da ficha).
+  notice           String?
+  createdAt        DateTime          @default(now())
+  updatedAt        DateTime          @updatedAt
+  channelManager   CatalogItem?      @relation("ClientChannelManager", fields: [channelManagerId], references: [id])
+  pms              CatalogItem?      @relation("ClientPms", fields: [pmsId], references: [id])
+  services         ClientService[]
+  credentials      VaultCredential[]
+
+  @@index([name])
+  @@map("clients")
+}
+
+/// Serviço contratado por um cliente, com a própria fase (D-14).
+model ClientService {
+  id         String    @id @default(cuid())
+  clientId   String
+  serviceId  String
+  phase      String
+  /// Contínuos: dia do mês do vencimento (1 a 31).
+  billingDay Int?
+  /// Pontuais: data única de vencimento.
+  dueDate    DateTime? @db.Date
+  startedAt  DateTime  @default(now())
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime  @updatedAt
+  client     Client    @relation(fields: [clientId], references: [id], onDelete: Cascade)
+  service    Service   @relation(fields: [serviceId], references: [id])
+
+  @@index([clientId])
+  @@map("client_services")
+}
+
+/// Acesso de um canal no Cofre (seguranca-e-cofre.md): usuário e senha cifrados (AES-256-GCM + key_version).
+model VaultCredential {
+  id            String      @id @default(cuid())
+  clientId      String
+  catalogItemId String
+  /// Rótulo opcional quando o canal tem mais de um acesso (ex.: "Conta 2").
+  label         String?
+  propertyId    String?
+  /// { ciphertext, iv, authTag, keyVersion }
+  username      Json
+  /// { ciphertext, iv, authTag, keyVersion }
+  password      Json
+  extranetUrl   String?
+  createdAt     DateTime    @default(now())
+  updatedAt     DateTime    @updatedAt
+  client        Client      @relation(fields: [clientId], references: [id], onDelete: Cascade)
+  catalogItem   CatalogItem @relation(fields: [catalogItemId], references: [id])
+
+  @@index([clientId])
+  @@map("vault_credentials")
+}
+
 /// Serviços contratáveis (D-15). Nome editável; tipo e fases são regras do produto (fases só leitura na Fase 1).
 model Service {
   /// Código interno estável: cadastro_revisao, consultoria, assessoria, central_reservas.
-  id        String   @id
+  id        String          @id
   name      String
   /// "pontual" | "continuo"
   kind      String
   phases    String[]
   position  Int
-  updatedAt DateTime @updatedAt
+  updatedAt DateTime        @updatedAt
+  clients   ClientService[]
 
   @@map("services")
 }

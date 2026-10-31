@@ -7,6 +7,7 @@ import {
   closeTab,
   cycleTab,
   initialTabsState,
+  navigateTab,
   openTab,
   replaceTab,
   sanitizeTabsState,
@@ -22,7 +23,12 @@ type TabsStore = TabsState & {
   dirtySources: Record<string, Record<string, boolean>>;
   /** Aba esperando confirmação para fechar com alterações não salvas. */
   pendingClose: string | null;
+  /** Nome exibido por aba quando depende de dados (ex.: nome do cliente). */
+  labels: Record<string, string>;
+  setLabel: (tabId: string, label: string) => void;
   open: (kind: TabKind, params?: Record<string, string>) => void;
+  /** Clique de navegação (D-94): troca a aba atual, ou abre outra com `newTab`. */
+  navigate: (kind: TabKind, params?: Record<string, string>, newTab?: boolean) => void;
   replace: (tabId: string, kind: TabKind, params?: Record<string, string>) => void;
   activate: (tabId: string) => void;
   requestClose: (tabId: string) => void;
@@ -42,7 +48,12 @@ function createTabsStore(userId: string, allowDev: boolean) {
           dirty: {},
           dirtySources: {},
           pendingClose: null,
+          labels: {},
+          setLabel: (tabId, label) =>
+            set((state) => (state.labels[tabId] === label ? state : { labels: { ...state.labels, [tabId]: label } })),
           open: (kind, params) => apply(openTab(get(), kind, params)),
+          navigate: (kind, params, newTab = false) =>
+            apply(navigateTab(get(), kind, params, { newTab, dirty: get().dirty })),
           replace: (tabId, kind, params) => apply(replaceTab(get(), tabId, kind, params)),
           activate: (tabId) => set({ activeId: tabId }),
           requestClose: (tabId) => {
@@ -76,8 +87,16 @@ function createTabsStore(userId: string, allowDev: boolean) {
         // Uma lista por usuário: o computador é compartilhado (D-84).
         name: `abas:${userId}`,
         storage: createJSONStorage(() => localStorage),
-        partialize: (state) => ({ tabs: state.tabs, activeId: state.activeId }),
-        merge: (persisted, current) => ({ ...current, ...sanitizeTabsState(persisted as Partial<TabsState>, allowDev) }),
+        partialize: (state) => ({
+          tabs: state.tabs,
+          activeId: state.activeId,
+          labels: Object.fromEntries(Object.entries(state.labels).filter(([id]) => state.tabs.some((tab) => tab.id === id))),
+        }),
+        merge: (persisted, current) => ({
+          ...current,
+          ...sanitizeTabsState(persisted as Partial<TabsState>, allowDev),
+          labels: (persisted as { labels?: Record<string, string> } | undefined)?.labels ?? {},
+        }),
       }
     )
   );
@@ -162,3 +181,8 @@ export function useCurrentTabDirtySources() {
 }
 
 const EMPTY_SOURCES: Record<string, boolean> = {};
+
+/** Ctrl+clique, Shift+clique, Cmd+clique ou botão do meio pedem aba nova (D-94). */
+export function wantsNewTab(event?: { ctrlKey?: boolean; metaKey?: boolean; shiftKey?: boolean; button?: number }) {
+  return !!event && (!!event.ctrlKey || !!event.metaKey || !!event.shiftKey || event.button === 1);
+}

@@ -14,6 +14,7 @@ import { useTabs } from "./tabs-store";
 // Faixa de abas (sistema-de-abas.md 2): Início fixa, + encostado na última, × na ativa e no hover.
 export function TabStrip() {
   const tabs = useTabs((state) => state.tabs);
+  const labels = useTabs((state) => state.labels);
   const activeId = useTabs((state) => state.activeId);
   const dirty = useTabs((state) => state.dirty);
   const activate = useTabs((state) => state.activate);
@@ -42,7 +43,7 @@ export function TabStrip() {
       <div role="tablist" aria-label="Abas abertas" className="flex min-w-0 items-end gap-1 overflow-x-auto [scrollbar-width:none]">
         {tabs.map((tab, index) => {
           const definition = TAB_REGISTRY[tab.kind];
-          const title = definition.title(tab);
+          const title = definition.title(tab, labels[tab.id]);
           const active = tab.id === activeId;
           const closable = tab.id !== HOME_TAB.id;
           return (

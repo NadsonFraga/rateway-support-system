@@ -41,7 +41,7 @@ Estabelecimento                  Serviços                             Sistemas 
 
 - **Separação:** `border-b` `--border-subtle`. Sem zebra.
 - **Hover:** fundo `--bg-surface-hover`, transição de 120ms.
-- **Clique:** abre a ficha em nova aba de trabalho (keep-alive). Se a aba do cliente já estiver aberta, apenas ativa a aba existente.
+- **Clique:** abre a ficha em nova aba de trabalho (keep-alive). Se a aba do cliente já estiver aberta, apenas ativa a aba existente. *(D-94: clique normal troca a aba atual; Ctrl/Shift/meio abre em aba nova.)*
 - **Teclado:** `↑`/`↓` move a seleção (contorno `--border-focus`), `Enter` abre a ficha.
 - **Clientes Pausados e Inativos** (visíveis só quando filtrados): nome em `--text-secondary` e logo com 60% de opacidade.
 

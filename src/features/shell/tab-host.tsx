@@ -48,8 +48,9 @@ function CloseConfirmation() {
   const tabs = useTabs((state) => state.tabs);
   const confirmClose = useTabs((state) => state.confirmClose);
   const cancelClose = useTabs((state) => state.cancelClose);
+  const labels = useTabs((state) => state.labels);
   const tab = tabs.find((item) => item.id === pendingClose);
-  const title = tab ? TAB_REGISTRY[tab.kind].title(tab) : "";
+  const title = tab ? TAB_REGISTRY[tab.kind].title(tab, labels[tab.id]) : "";
 
   return (
     <Dialog open={!!tab} onOpenChange={(open) => !open && cancelClose()}>

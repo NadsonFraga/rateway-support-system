@@ -172,3 +172,13 @@ Decisões de produto e de design tomadas durante o planejamento. Cada entrada re
 | D-87 | **Configurações sem trava.** Cada seção edita direto e salva no cabeçalho. Se outra pessoa salvar a mesma seção enquanto você edita, aparece na hora um aviso na seção com o nome de quem salvou; você decide salvar por cima ou descartar (Esc). Sem alterações pendentes, a seção se atualiza sozinha. | Só administradores editam e conflitos são raros; um passo de "Editar" a mais não compensa. |
 | D-88 | Canal, Channel Manager, PMS e serviço interno do catálogo são **arquivados**, não excluídos: saem das listas e dos novos cadastros, mas continuam nos clientes que já os usam, e podem ser reativados. | Não quebrar o histórico do Cofre e da Matriz. |
 | D-89 | Logos e fotos de perfil ficam **no próprio banco** (até 512 KB; PNG, SVG, WebP ou JPG), servidos por rota própria que impede SVG de executar código. | Backup único junto com os dados; nada a configurar na VPS. |
+
+## 31/10/2026 — Clientes (Etapa 1.3)
+
+| # | Decisão | Motivo |
+| :--- | :--- | :--- |
+| D-90 | Administrador **e Analista de Implantação** mudam a **fase** dos serviços do cliente. Contratar, encerrar e editar vencimento continuam só do Administrador (D-40). | Quem toca a implantação no dia a dia é o Analista. |
+| D-91 | Administrador e Analista de Implantação cadastram clientes e editam Dados Técnicos. Operador de Rotina consulta e usa o Cofre (D-36). | Tabela de permissões de `seguranca-e-cofre.md`. |
+| D-92 | Na Etapa 1.3, a Visão Geral mostra o bloco Sistemas; Demandas e Implantação aparecem como "Em breve" até as etapas 1.4/1.5 e 1.6. | Os dados dessas partes ainda não existem. |
+| D-93 | Só Administrador exclui cliente, e só se não houver acessos no Cofre nem demandas (cadastro errado). Cliente real que saiu fica Inativo pelos serviços (D-26). | Não perder histórico. |
+| D-94 | **Clique como no navegador:** o clique normal troca o conteúdo da aba atual; Ctrl+clique, Shift+clique ou botão do meio abrem em aba nova. Exceções que abrem em aba nova: a aba Início e uma aba com alterações não salvas. Se o destino já está aberto em outra aba, só vai até ela. Vale para sidebar, listagens, árvore de clientes, busca Ctrl+K (Enter troca, Ctrl+Enter abre nova) e caixa de entrada. Substitui o "abre em nova aba" das specs. | Evita acumular abas; comportamento já conhecido do navegador. |

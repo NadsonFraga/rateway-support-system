@@ -4,8 +4,14 @@ import * as React from "react";
 import { Settings, SlidersHorizontal } from "lucide-react";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { cn } from "@/lib/utils";
+import { listClients } from "@/features/clients/actions";
+import { EntityLogo } from "@/features/clients/components/bits";
+import { CLIENT_STATUS_LABEL, phaseKind } from "@/features/clients/rules";
+import { CLIENTS_TOPIC } from "@/features/clients/topics";
+import type { ClientSummary } from "@/features/clients/types";
+import { useRealtime } from "@/features/realtime/client";
 import { MODULES } from "./tab-registry";
-import { useTabs } from "./tabs-store";
+import { useTabs, wantsNewTab } from "./tabs-store";
 
 const WIDTH_KEY = "sidebar-largura";
 const DISPLAY_KEY = "sidebar-exibicao";
@@ -52,7 +58,7 @@ export function Sidebar({ isAdmin }: { isAdmin: boolean }) {
   const [width, setWidth] = React.useState(() => readStored(WIDTH_KEY, SIDEBAR_DEFAULT));
   const activeId = useTabs((state) => state.activeId);
   const tabs = useTabs((state) => state.tabs);
-  const openTab = useTabs((state) => state.open);
+  const navigate = useTabs((state) => state.navigate);
   const activeKind = tabs.find((tab) => tab.id === activeId)?.kind;
 
   const clamp = (value: number) => Math.min(SIDEBAR_MAX, Math.max(SIDEBAR_MIN, Math.round(value)));
@@ -92,7 +98,8 @@ export function Sidebar({ isAdmin }: { isAdmin: boolean }) {
             <button
               key={module.kind}
               type="button"
-              onClick={() => openTab(module.kind)}
+              onClick={(event) => navigate(module.kind, undefined, wantsNewTab(event))}
+              onAuxClick={(event) => event.button === 1 && navigate(module.kind, undefined, true)}
               aria-current={active ? "page" : undefined}
               className={cn(
                 "flex h-9 items-center gap-2.5 rounded-lg px-2.5 text-sm",
@@ -112,7 +119,8 @@ export function Sidebar({ isAdmin }: { isAdmin: boolean }) {
         <div className="border-t border-line-subtle p-2">
           <button
             type="button"
-            onClick={() => openTab("configuracoes")}
+            onClick={(event) => navigate("configuracoes", undefined, wantsNewTab(event))}
+            onAuxClick={(event) => event.button === 1 && navigate("configuracoes", undefined, true)}
             aria-current={activeKind === "configuracoes" ? "page" : undefined}
             className={cn(
               "flex h-9 w-full items-center gap-2.5 rounded-lg px-2.5 text-sm",
@@ -149,8 +157,53 @@ export function Sidebar({ isAdmin }: { isAdmin: boolean }) {
   );
 }
 
-/** Seção "Clientes": Opções de Exibição (Agrupar e Classificar) e a árvore, que recebe dados na Etapa 1.3. */
+const SORTERS: Record<SortBy, (a: ClientSummary, b: ClientSummary) => number> = {
+  alteracoes: (a, b) => b.updatedAt.localeCompare(a.updatedAt),
+  inclusao: (a, b) => a.createdAt.localeCompare(b.createdAt),
+  az: (a, b) => a.name.localeCompare(b.name, "pt-BR"),
+  za: (a, b) => b.name.localeCompare(a.name, "pt-BR"),
+  // Demandas chegam na Etapa 1.4; até lá, ordem alfabética.
+  demandas: (a, b) => a.name.localeCompare(b.name, "pt-BR"),
+};
+
+/** Grupos da árvore. Inativos não aparecem; no agrupamento por serviço, o cliente aparece em cada serviço ativo. */
+function groupClients(clients: ClientSummary[], groupBy: GroupBy, sortBy: SortBy) {
+  const visible = clients.filter((client) => client.status !== "inativo").sort(SORTERS[sortBy]);
+  if (groupBy === "nenhum") return visible.length ? [{ key: "todos", label: null, items: visible }] : [];
+  if (groupBy === "status") {
+    return (["ativo", "pausado"] as const)
+      .map((status) => ({ key: status, label: CLIENT_STATUS_LABEL[status], items: visible.filter((client) => client.status === status) }))
+      .filter((group) => group.items.length);
+  }
+  const groups = new Map<string, { key: string; label: string; items: ClientSummary[] }>();
+  for (const client of visible) {
+    for (const service of client.services.filter((item) => phaseKind(item.phase) !== "encerrada")) {
+      const group = groups.get(service.serviceId) ?? { key: service.serviceId, label: service.name, items: [] };
+      if (!group.items.includes(client)) group.items.push(client);
+      groups.set(service.serviceId, group);
+    }
+  }
+  return [...groups.values()];
+}
+
+/** Seção "Clientes": Opções de Exibição (Agrupar e Classificar) e a árvore de clientes. */
 function ClientTree() {
+  const [clients, setClients] = React.useState<ClientSummary[] | null>(null);
+  const navigate = useTabs((state) => state.navigate);
+  const activeCode = useTabs((state) => {
+    const tab = state.tabs.find((item) => item.id === state.activeId);
+    return tab?.kind === "cliente" ? tab.params?.codigo : undefined;
+  });
+  const reload = React.useCallback(async () => setClients(await listClients()), []);
+  React.useEffect(() => {
+    let cancelled = false;
+    void listClients().then((list) => !cancelled && setClients(list));
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+  useRealtime(CLIENTS_TOPIC, () => void reload());
+
   const [display, setDisplay] = React.useState(() =>
     readStored<{ groupBy: GroupBy; sortBy: SortBy }>(DISPLAY_KEY, { groupBy: "nenhum", sortBy: "alteracoes" })
   );
@@ -188,8 +241,32 @@ function ClientTree() {
           </PopoverContent>
         </Popover>
       </div>
-      <div className="min-h-0 flex-1 overflow-y-auto px-4 pb-3">
-        <p className="text-[13px] text-ink-muted">Os clientes aparecem aqui a partir da Etapa 1.3.</p>
+      <div className="min-h-0 flex-1 overflow-y-auto px-2 pb-3">
+        {clients && clients.every((client) => client.status === "inativo") && (
+          <p className="px-2 text-[13px] text-ink-muted">Nenhum cliente ativo.</p>
+        )}
+        {clients &&
+          groupClients(clients, display.groupBy, display.sortBy).map((group) => (
+            <div key={group.key} role="group" aria-label={group.label ?? "Clientes"} className="flex flex-col">
+              {group.label && <p className="mt-2 flex h-7 items-center px-2 text-xs text-ink-muted">{group.label}</p>}
+              {group.items.map((client) => (
+                <button
+                  key={client.id}
+                  type="button"
+                  onClick={(event) => navigate("cliente", { codigo: client.code }, wantsNewTab(event))}
+                  onAuxClick={(event) => event.button === 1 && navigate("cliente", { codigo: client.code }, true)}
+                  aria-current={activeCode === client.code ? "page" : undefined}
+                  className={cn(
+                    "flex h-8 w-full min-w-0 items-center gap-2 rounded-lg px-2 text-left text-[13px] font-medium tracking-[-0.012em]",
+                    activeCode === client.code ? "bg-accent-subdued text-ink" : "text-ink-secondary hover:bg-surface-hover hover:text-ink"
+                  )}
+                >
+                  <EntityLogo name={client.name} logoUrl={client.logoUrl} size={16} />
+                  <span className="truncate">{client.name}</span>
+                </button>
+              ))}
+            </div>
+          ))}
       </div>
     </section>
   );

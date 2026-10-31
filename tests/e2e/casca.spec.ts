@@ -51,7 +51,8 @@ test("atalhos Alt+T, Alt+W, Alt+. e Alt+, (D-81) e o F5 reabre as abas (D-84)", 
   await signIn(page, testUsers().admin);
   const nav = page.getByRole("navigation", { name: "Módulos" });
   await nav.getByRole("button", { name: "Demandas" }).click();
-  await nav.getByRole("button", { name: "Clientes" }).click();
+  // Ctrl+clique abre em aba nova (D-94); o clique simples trocaria a aba Demandas.
+  await nav.getByRole("button", { name: "Clientes" }).click({ modifiers: ["Control"] });
   await expect(tab(page, "Clientes")).toHaveAttribute("aria-selected", "true");
 
   await page.keyboard.press("Alt+Comma");
@@ -76,7 +77,7 @@ test("busca Ctrl+K abre módulos e a sidebar guarda a largura", async ({ browser
   await signIn(page, testUsers().admin);
 
   await page.keyboard.press("Control+KeyK");
-  const search = page.getByRole("combobox", { name: "Buscar ou executar um comando" });
+  const search = page.getByRole("combobox", { name: "Buscar cliente ou executar um comando" });
   await search.fill("cadastros");
   await page.keyboard.press("Enter");
   await expect(tab(page, "Cadastros")).toHaveAttribute("aria-selected", "true");
@@ -105,7 +106,7 @@ test("caixa de entrada recebe a notificação de teste em menos de 1 segundo", a
   await expect(inbox).toHaveAttribute("data-nao-lidas", "0");
 
   await ana.keyboard.press("Control+KeyK");
-  await ana.getByRole("combobox", { name: "Buscar ou executar um comando" }).fill("notificação de teste");
+  await ana.getByRole("combobox", { name: "Buscar cliente ou executar um comando" }).fill("notificação de teste");
   const started = Date.now();
   await ana.keyboard.press("Enter");
   await expect(inbox).not.toHaveAttribute("data-nao-lidas", "0", { timeout: 5000 });
@@ -144,7 +145,7 @@ test("prints e acessibilidade (axe) da casca nos dois temas", async ({ browser }
     await check("casca");
 
     await page.keyboard.press("Control+KeyK");
-    await expect(page.getByRole("combobox", { name: "Buscar ou executar um comando" })).toBeVisible();
+    await expect(page.getByRole("combobox", { name: "Buscar cliente ou executar um comando" })).toBeVisible();
     await page.waitForTimeout(300);
     await page.screenshot({ path: `${PRINTS}/busca-ctrl-k-${theme}.png` });
     await check("busca");

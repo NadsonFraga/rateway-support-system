@@ -8,7 +8,8 @@ export type TabKind =
   | "configuracoes"
   | "minha-conta"
   | "nova"
-  | "rascunho";
+  | "rascunho"
+  | "cliente";
 
 export type Tab = { id: string; kind: TabKind; params?: Record<string, string> };
 
@@ -35,6 +36,29 @@ export function openTab(state: TabsState, kind: TabKind, params?: Record<string,
   const existing = state.tabs.find((tab) => tab.id === id);
   if (existing) return { ...state, activeId: id };
   return { tabs: [...state.tabs, { id, kind, params }], activeId: id };
+}
+
+/**
+ * Navegação por clique (D-94): troca o conteúdo da aba atual, como no navegador.
+ * Abre em aba nova quando pedido (Ctrl/Shift/botão do meio), quando a atual é o Início
+ * ou quando a atual tem alterações não salvas. Se o destino já está aberto, só vai até ele.
+ */
+export function navigateTab(
+  state: TabsState,
+  kind: TabKind,
+  params: Record<string, string> | undefined,
+  options: { newTab: boolean; dirty: Record<string, boolean> }
+): TabsState {
+  const id = tabIdFor(kind, params);
+  if (state.tabs.some((tab) => tab.id === id)) return { ...state, activeId: id };
+  const active = state.tabs.find((tab) => tab.id === state.activeId);
+  if (options.newTab || !active || active.id === HOME_TAB.id || options.dirty[active.id]) {
+    return openTab(state, kind, params);
+  }
+  return {
+    tabs: state.tabs.map((tab) => (tab.id === active.id ? { id, kind, params } : tab)),
+    activeId: id,
+  };
 }
 
 /** Troca o conteúdo da aba "Nova aba" pelo módulo escolhido (ou foca o módulo se ele já estiver aberto). */
@@ -83,7 +107,7 @@ export function sanitizeTabsState(state: Partial<TabsState> | undefined, allowDe
 
 // ---- Endereço do navegador ↔ aba ----
 
-const PATH_BY_KIND: Record<Exclude<TabKind, "rascunho">, string> = {
+const PATH_BY_KIND: Record<Exclude<TabKind, "rascunho" | "cliente">, string> = {
   inicio: "/",
   demandas: "/demandas",
   clientes: "/clientes",
@@ -94,6 +118,7 @@ const PATH_BY_KIND: Record<Exclude<TabKind, "rascunho">, string> = {
 };
 
 export function pathForTab(tab: Tab): string {
+  if (tab.kind === "cliente") return `/clientes/${encodeURIComponent(tab.params?.codigo ?? "")}`;
   if (tab.kind === "rascunho") return `/rascunho/${tab.params?.numero ?? "1"}`;
   if (tab.kind === "nova") return `${PATH_BY_KIND.nova}/${tab.id.replace(/^nova-/, "")}`;
   return PATH_BY_KIND[tab.kind];
@@ -104,6 +129,8 @@ export function tabForPath(pathname: string): { kind: TabKind; params?: Record<s
   const path = pathname.replace(/\/+$/, "") || "/";
   const rascunho = path.match(/^\/rascunho\/(\d{1,4})$/);
   if (rascunho) return { kind: "rascunho", params: { numero: rascunho[1] } };
+  const cliente = path.match(/^\/clientes\/([^/]{1,40})$/);
+  if (cliente) return { kind: "cliente", params: { codigo: decodeURIComponent(cliente[1]).toUpperCase() } };
   if (path.startsWith("/nova-aba")) return { kind: "nova" };
   const entry = Object.entries(PATH_BY_KIND).find(([, value]) => value === path);
   return entry ? { kind: entry[0] as TabKind } : null;

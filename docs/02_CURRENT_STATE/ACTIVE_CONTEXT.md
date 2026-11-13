@@ -1,35 +1,29 @@
 # Active Context (SSOT)
 
 ## Current Objective
-Checklist Ergonomics, Operational Parity & Deep Field Detailing (`Sistema Rateway.html`), Multi-Meal Regimes, Inline Amenity Observations, Guest Access & Housekeeping Policies, and Sidebar Navigation Clean-up.
+Hospitality Operational Subsystem Handover for Rateway RMS Integration.
 
-## Current Phase: Phase 4 (Completed & Verified)
-- 100% test pass rate (74/74 unit tests, 0 TypeScript errors, clean `next build` and live dev server).
-- Clean Codebase:
-  - All legacy dev test routes permanently removed; schema pruned.
-  - Sidebar top navigation cleaned: `Configurações` and `Minha Conta` removed from the primary module list in `src/features/shell/tab-registry.tsx`.
-  - Sidebar primary nav now contains exclusively: Início, Demandas, Clientes, Cadastros.
-- Dashboard KPI cards operational: "Clientes em cadastro", "Canais atrasados", "Demandas abertas" and "Finalizadas na semana".
-- Módulo 04:
-  - Interactive inline detail/observation inputs on all 28 facility cards when checked, with canonical prototype hints.
-  - Multi-select meal regimes (*Só acomodação*, *Café da manhã incluso*, *Café da manhã pago à parte*, *Meia pensão (com almoço)*, *Meia pensão (com jantar)*, *Pensão completa*, *All inclusive*).
-  - Operating hours and standalone price fields for active regimes.
-- Módulo 06:
-  - Matriz de comodidades dos quartos with inline specification inputs on active amenities, plus interactive category checkboxes under "Algumas".
-- Módulo 07:
-  - Guest access section (entry methods: physical reception, digital locks, lockboxes, mobile apps, RFID).
-  - Housekeeping section (cleaning frequency, linen exchange, stay cleaning fee).
-- PDF Export:
-  - Fully synchronized with new fields, inline notes, access methods, and housekeeping policies.
+## Current Phase: Phase 4 (Completed, Synced & Pushed)
+- **Git Remote Synchronization**: 100% synchronized with GitHub `origin/main` (`https://github.com/NadsonFraga/rateway-support-system.git`).
+- **Clean Database**:
+  - Test establishments removed from the local database (`support_system_dev`).
+  - Prisma migrations define the clean schema for immediate reproducible deployment.
+- **RMS Handover Documentation**:
+  - Exhaustive `README.md` written for the next engineer/agent detailing full data structures, JSONB schemas, encryption, and RMS endpoints.
+  - Integration guides in `docs/` (`RMS_INTEGRATION_GUIDE.md`, `DATABASE_SCHEMA.md`, `ARCHITECTURE_AND_DEPLOYMENT.md`).
+- **Core Modules Fully Verified**:
+  - 10-Module Checklist with full canonical parity, inline facility observations, multi-meal regimes, guest access, and housekeeping policies.
+  - Cadastros Matrix and priority queue.
+  - Demands Kanban and tracking engine.
+  - Encrypted Credential Vault.
+  - Cleaned Shell Navigation (Configurações strictly in sidebar footer, Minha Conta in user capsule).
+  - 74/74 unit tests passing, 0 TypeScript errors.
 
 ## Recent Changes
-1. `src/features/shell/tab-registry.tsx`: Pruned `MODULES` array back to the canonical 4 items (Início, Demandas, Clientes, Cadastros).
-2. `src/features/checklist/types.ts`: Added `regimesAlimentacao`, `metodoAcesso`, `detalhesAcesso`, `limpezaFrequencia`, `trocaEnxoval`, `taxaLimpezaEstadia`, `facilidadesExtras`.
-3. `src/features/checklist/modules/mod-04-structure-operations.tsx`: Overhauled facilities grid with inline `det` inputs when checked, and multi-regime meal selection.
-4. `src/features/checklist/modules/mod-06-amenities-matrix.tsx`: Added inline specification inputs for active amenities.
-5. `src/features/checklist/modules/mod-07-policies.tsx`: Added "Acesso e Entrada do Hóspede" and "Limpeza & Governança (Housekeeping)" sections.
-6. `src/features/checklist/export-pdf.ts`: Exporting regimes, detailed amenities, access, and housekeeping.
+1. Local Database Clean-up: Cleared 12 dummy test clients and associated records.
+2. `README.md`: Overhauled with deep technical documentation for the RMS agent.
+3. Git Commit & Push: Pushed commit `797d377` to `origin/main`.
+4. Feature Summary: Generated [.archives/features/2026-11-13-github-handover-rms/summary.md](file:///c:/Users/nadson/Documents/Claude/Rateway%20Support%20System/.archives/features/2026-11-13-github-handover-rms/summary.md).
 
 ## Next Steps
-1. Immediate user verification in browser (`http://localhost:3000`).
-2. Final push sequence when user indicates completion.
+- Handover to the next agent for RMS implementation.

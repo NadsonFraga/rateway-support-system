@@ -47,10 +47,23 @@ export function MembersSection() {
   const [confirm, setConfirm] = React.useState<Confirm>(null);
   const [tempPassword, setTempPassword] = React.useState<{ name: string; password: string } | null>(null);
 
-  const reload = React.useCallback(async () => setMembers(await listMembers()), []);
+  const reload = React.useCallback(async () => {
+    try {
+      const list = await listMembers();
+      setMembers(list ?? []);
+    } catch {
+      setMembers([]);
+    }
+  }, []);
   React.useEffect(() => {
     let cancelled = false;
-    void listMembers().then((list) => !cancelled && setMembers(list));
+    void listMembers()
+      .then((list) => {
+        if (!cancelled) setMembers(list ?? []);
+      })
+      .catch(() => {
+        if (!cancelled) setMembers([]);
+      });
     return () => {
       cancelled = true;
     };

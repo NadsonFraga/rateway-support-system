@@ -48,8 +48,7 @@ export function FirstAccess({ username, needsPassword }: { username: string; nee
       setCode("");
       return setError("Código incorreto. Confira o Google Authenticator e digite o código atual.");
     }
-    router.replace("/");
-    router.refresh();
+    window.location.assign("/");
   }
 
   return (

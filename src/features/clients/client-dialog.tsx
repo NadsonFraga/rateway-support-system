@@ -1,6 +1,8 @@
 "use client";
 
 import * as React from "react";
+import { Dialog, DialogBody, DialogContent, DialogHeader } from "@/components/ui/dialog";
+import { Skeleton } from "@/components/ui/skeleton";
 import type { SaveState } from "@/components/ui/save-button";
 import { createClient, loadClientFormOptions, previewClientCode, suggestCode, updateClient } from "./actions";
 import { ClientFieldsForm, EMPTY_FIELDS, InitialServicesForm, type FormOptions } from "./components/client-form";
@@ -29,28 +31,60 @@ function fieldsOf(client: ClientDetail): ClientFields {
 
 function useFormOptions(open: boolean) {
   const [options, setOptions] = React.useState<FormOptions | null>(null);
+
+  React.useEffect(() => {
+    let cancelled = false;
+    void loadClientFormOptions().then((value) => {
+      if (!cancelled && value) setOptions(value);
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
   React.useEffect(() => {
     if (!open || options) return;
     let cancelled = false;
-    void loadClientFormOptions().then((value) => !cancelled && value && setOptions(value));
+    void loadClientFormOptions().then((value) => {
+      if (!cancelled && value) setOptions(value);
+    });
     return () => {
       cancelled = true;
     };
   }, [open, options]);
+
   return options;
 }
 
 /** Novo Cliente: sigla sugerida pelo nome (editável, D-74) e serviços iniciais. */
 export function NewClientDialog({ open, onClose, onCreated }: { open: boolean; onClose: () => void; onCreated: (code: string) => void }) {
   const options = useFormOptions(open);
-  return open && options ? <NewClientInner options={options} onClose={onClose} onCreated={onCreated} /> : null;
+
+  if (!open) return null;
+
+  if (!options) {
+    return (
+      <Dialog open={open} onOpenChange={(val) => !val && onClose()}>
+        <DialogContent className="max-w-2xl">
+          <DialogHeader title="Novo cliente" />
+          <DialogBody className="flex flex-col gap-3 p-6">
+            <Skeleton className="h-8 w-3/4" />
+            <Skeleton className="h-8 w-full" />
+            <Skeleton className="h-8 w-1/2" />
+          </DialogBody>
+        </DialogContent>
+      </Dialog>
+    );
+  }
+
+  return <NewClientInner options={options} onClose={onClose} onCreated={onCreated} />;
 }
 
 function NewClientInner({ options, onClose, onCreated }: { options: FormOptions; onClose: () => void; onCreated: (code: string) => void }) {
   const [fields, setFields] = React.useState<ClientFields>(EMPTY_FIELDS);
   const [services, setServices] = React.useState<NewServiceInput[]>(() => {
     const first = options.services[0];
-    return [{ serviceId: first.id, phase: first.phases[0], billingDay: null, dueDate: null }];
+    return first ? [{ serviceId: first.id, phase: first.phases[0] ?? "implantacao", billingDay: null, dueDate: null }] : [];
   });
   const [preview, setPreview] = React.useState<string | null>(null);
   const [saveState, setSaveState] = React.useState<SaveState>("idle");

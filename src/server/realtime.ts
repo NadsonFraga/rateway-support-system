@@ -118,7 +118,8 @@ export function startRealtime(httpServer: HttpServer) {
 
 /** Conexão dedicada ao LISTEN, com reconexão automática se o banco reiniciar. */
 async function listenToDatabase(io: Server, attempt = 0): Promise<void> {
-  const client = new Client({ connectionString: process.env.DATABASE_URL });
+  const connectionString = process.env.DIRECT_URL ?? process.env.DATABASE_URL;
+  const client = new Client({ connectionString });
   const retry = () => {
     client.removeAllListeners();
     void client.end().catch(() => undefined);

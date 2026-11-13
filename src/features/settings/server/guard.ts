@@ -6,8 +6,10 @@ import { ROLES } from "@/features/auth/permissions";
 /** Pessoa logada com acesso completo (primeiro acesso concluído), ou null. */
 export async function currentMember() {
   const session = await getSession();
-  if (!session || isPastMaxAge(session.session.createdAt)) return null;
-  if (session.user.mustChangePassword || !session.user.twoFactorEnabled) return null;
+  if (!session) return null;
+  if (isPastMaxAge(session.session.createdAt)) return null;
+  if (session.user.mustChangePassword) return null;
+  if (!session.user.twoFactorEnabled) return null;
   return session.user;
 }
 

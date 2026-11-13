@@ -90,7 +90,8 @@ async function announce(clientId: string, code: string) {
 // ---- Leitura (todos os perfis) ----
 
 export async function listClients(): Promise<ClientSummary[] | null> {
-  if (!(await currentMember())) return null;
+  const member = await currentMember();
+  if (!member) return null;
   const rows = await prisma.client.findMany({ include: clientInclude, orderBy: { name: "asc" } });
   return rows.map(toSummary);
 }
@@ -394,7 +395,8 @@ export async function deleteClient(clientId: string): Promise<SaveResult<null>> 
 
 /** Lista de serviços e catálogo para os formulários. */
 export async function loadClientFormOptions() {
-  if (!(await currentMember())) return null;
+  const member = await currentMember();
+  if (!member) return { services: [], channelManagers: [], pmsList: [] };
   const [services, catalog] = await Promise.all([
     prisma.service.findMany({ orderBy: { position: "asc" } }),
     prisma.catalogItemCategory.findMany({

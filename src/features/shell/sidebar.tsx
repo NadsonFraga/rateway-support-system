@@ -192,10 +192,23 @@ function ClientTree() {
     const tab = state.tabs.find((item) => item.id === state.activeId);
     return tab?.kind === "cliente" ? tab.params?.codigo : undefined;
   });
-  const reload = React.useCallback(async () => setClients(await listClients()), []);
+  const reload = React.useCallback(async () => {
+    try {
+      const list = await listClients();
+      setClients(list ?? []);
+    } catch {
+      setClients([]);
+    }
+  }, []);
   React.useEffect(() => {
     let cancelled = false;
-    void listClients().then((list) => !cancelled && setClients(list));
+    void listClients()
+      .then((list) => {
+        if (!cancelled) setClients(list ?? []);
+      })
+      .catch(() => {
+        if (!cancelled) setClients([]);
+      });
     return () => {
       cancelled = true;
     };

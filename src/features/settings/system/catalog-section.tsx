@@ -47,10 +47,23 @@ export function CatalogSection() {
   const [editing, setEditing] = React.useState<CatalogEntry | "novo" | null>(null);
   const [error, setError] = React.useState<string | null>(null);
 
-  const reload = React.useCallback(async () => setItems(await listCatalog()), []);
+  const reload = React.useCallback(async () => {
+    try {
+      const list = await listCatalog();
+      setItems(list ?? []);
+    } catch {
+      setItems([]);
+    }
+  }, []);
   React.useEffect(() => {
     let cancelled = false;
-    void listCatalog().then((list) => !cancelled && setItems(list));
+    void listCatalog()
+      .then((list) => {
+        if (!cancelled) setItems(list ?? []);
+      })
+      .catch(() => {
+        if (!cancelled) setItems([]);
+      });
     return () => {
       cancelled = true;
     };

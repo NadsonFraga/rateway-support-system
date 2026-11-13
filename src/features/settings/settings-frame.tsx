@@ -12,7 +12,13 @@ export type FrameSection = { id: string; label: string; icon: LucideIcon; soon?:
 // conteúdo de até 760px. Todas as seções ficam montadas: o rascunho de uma sobrevive à troca para outra.
 export function SettingsFrame({ title, sections }: { title: string; sections: FrameSection[] }) {
   const [active, setActive] = React.useState(sections[0].id);
+  const [visited, setVisited] = React.useState<Set<string>>(() => new Set([sections[0].id]));
   const dirtySources = useCurrentTabDirtySources();
+
+  const handleSelect = (id: string) => {
+    setActive(id);
+    setVisited((prev) => (prev.has(id) ? prev : new Set(prev).add(id)));
+  };
 
   return (
     <div className="flex min-h-full">
@@ -23,7 +29,7 @@ export function SettingsFrame({ title, sections }: { title: string; sections: Fr
             <li key={section.id}>
               <button
                 type="button"
-                onClick={() => setActive(section.id)}
+                onClick={() => handleSelect(section.id)}
                 aria-current={active === section.id ? "page" : undefined}
                 className={cn(
                   "flex min-h-9 w-full items-center gap-2.5 rounded-lg px-2.5 py-1.5 text-left text-sm",
@@ -46,11 +52,14 @@ export function SettingsFrame({ title, sections }: { title: string; sections: Fr
         </ul>
       </nav>
       <div className="min-w-0 flex-1 px-10 py-8">
-        {sections.map((section) => (
-          <div key={section.id} hidden={active !== section.id} className="max-w-[760px]">
-            {section.content}
-          </div>
-        ))}
+        {sections.map((section) => {
+          if (!visited.has(section.id)) return null;
+          return (
+            <div key={section.id} hidden={active !== section.id} className="max-w-[760px]">
+              {section.content}
+            </div>
+          );
+        })}
       </div>
     </div>
   );

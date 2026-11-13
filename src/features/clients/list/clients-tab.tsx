@@ -51,10 +51,23 @@ export function ClientsTab() {
   const rowsRef = React.useRef<(HTMLDivElement | null)[]>([]);
   const canCreate = me.role === ROLES.administrador || me.role === ROLES.analistaImplantacao;
 
-  const reload = React.useCallback(async () => setClients(await listClients()), []);
+  const reload = React.useCallback(async () => {
+    try {
+      const list = await listClients();
+      setClients(list ?? []);
+    } catch {
+      setClients([]);
+    }
+  }, []);
   React.useEffect(() => {
     let cancelled = false;
-    void listClients().then((list) => !cancelled && setClients(list));
+    void listClients()
+      .then((list) => {
+        if (!cancelled) setClients(list ?? []);
+      })
+      .catch(() => {
+        if (!cancelled) setClients([]);
+      });
     return () => {
       cancelled = true;
     };

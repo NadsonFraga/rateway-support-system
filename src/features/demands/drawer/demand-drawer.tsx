@@ -96,13 +96,25 @@ export function DemandDrawerHost() {
   const open = !!code || !!creating;
 
   React.useEffect(() => {
-    if (!open) return;
     let cancelled = false;
-    void loadDemandFormOptions().then((value) => !cancelled && value && setOptions(value));
+    void loadDemandFormOptions().then((value) => {
+      if (!cancelled && value) setOptions(value);
+    });
     return () => {
       cancelled = true;
     };
-  }, [open]);
+  }, []);
+
+  React.useEffect(() => {
+    if (!open || options) return;
+    let cancelled = false;
+    void loadDemandFormOptions().then((value) => {
+      if (!cancelled && value) setOptions(value);
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, [open, options]);
 
   if (!open) return <Drawer open={false} onOpenChange={() => undefined} title="">{null}</Drawer>;
   if (!options) {

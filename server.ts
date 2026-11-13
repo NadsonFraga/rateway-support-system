@@ -27,8 +27,9 @@ async function main() {
   });
   startRealtime(httpServer);
 
-  httpServer.listen(port, () => {
+  httpServer.listen(port, "0.0.0.0", () => {
     console.log(`> Sistema em http://localhost:${port} (${production ? "produção" : "desenvolvimento"})`);
+    console.log(`> Rede local: http://192.168.3.114:${port}`);
   });
 }
 

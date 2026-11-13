@@ -77,18 +77,29 @@ export function DemandsTab() {
   const source = view === "quadro" ? "quadro" : scope;
 
   const reload = React.useCallback(async () => {
-    const [list, totals] = await Promise.all([listDemands(source), countDemands()]);
-    setDemands(list);
-    setCounts(totals);
+    try {
+      const [list, totals] = await Promise.all([listDemands(source), countDemands()]);
+      setDemands(list ?? []);
+      setCounts(totals ?? { ativas: 0, concluidas: 0 });
+    } catch {
+      setDemands([]);
+      setCounts({ ativas: 0, concluidas: 0 });
+    }
   }, [source]);
 
   React.useEffect(() => {
     let cancelled = false;
-    void Promise.all([listDemands(source), countDemands()]).then(([list, totals]) => {
-      if (cancelled) return;
-      setDemands(list);
-      setCounts(totals);
-    });
+    void Promise.all([listDemands(source), countDemands()])
+      .then(([list, totals]) => {
+        if (cancelled) return;
+        setDemands(list ?? []);
+        setCounts(totals ?? { ativas: 0, concluidas: 0 });
+      })
+      .catch(() => {
+        if (cancelled) return;
+        setDemands([]);
+        setCounts({ ativas: 0, concluidas: 0 });
+      });
     return () => {
       cancelled = true;
     };

@@ -66,8 +66,7 @@ export function LoginForm({ instanceName }: { instanceName: string }) {
     }
 
     // Sem autenticador ainda: o servidor leva ao primeiro acesso.
-    router.replace("/");
-    router.refresh();
+    window.location.assign("/");
   }
 
   async function onSubmitCode(value: string) {
@@ -79,8 +78,7 @@ export function LoginForm({ instanceName }: { instanceName: string }) {
       if (verifyError.status === 429) return fail("Muitas tentativas seguidas. Aguarde um minuto e tente de novo.");
       return fail("Código incorreto. Confira o Google Authenticator e digite o código atual.");
     }
-    router.replace("/");
-    router.refresh();
+    window.location.assign("/");
   }
 
   return (

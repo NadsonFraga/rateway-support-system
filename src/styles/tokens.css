@@ -76,6 +76,7 @@
   --bg-surface-elevated: #f2f2f2;
   --bg-surface-hover: #dadada;
   --bg-surface-active: #d0d0d0;
+  --bg-input: #ffffff;
 
   --border-subtle: rgba(0, 0, 0, 0.1);
   --border-medium: rgba(0, 0, 0, 0.16);
@@ -93,6 +94,9 @@
 
   --fact-coral: #864033;
   --fact-amber: #6f5317;
+  --cyan-fact: #0891b2;
+  --yellow-fact: #b45309;
+  --pink-fact: #e11d48;
 
   --dot-andamento: #6b6b70;
   --dot-aguardando: #2f72a8;

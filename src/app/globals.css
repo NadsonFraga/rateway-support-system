@@ -100,6 +100,23 @@
   .tabular {
     font-variant-numeric: tabular-nums;
   }
+
+  input,
+  select,
+  textarea {
+    color-scheme: inherit;
+  }
+
+  /* Previne contraste invisível no preenchimento automático do navegador */
+  input:-webkit-autofill,
+  input:-webkit-autofill:hover,
+  input:-webkit-autofill:focus,
+  textarea:-webkit-autofill,
+  select:-webkit-autofill {
+    -webkit-box-shadow: 0 0 0px 1000px var(--bg-input) inset !important;
+    -webkit-text-fill-color: var(--text-primary) !important;
+    caret-color: var(--text-primary) !important;
+  }
 }
 
 /* Transição de 200ms nas superfícies durante a troca de tema (sem piscar) */

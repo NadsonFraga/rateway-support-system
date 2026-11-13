@@ -59,12 +59,25 @@ export function VaultPanel({ clientId }: { clientId: string }) {
   const searchRef = React.useRef<HTMLInputElement>(null);
 
   const reload = React.useCallback(
-    async () => setRows(await listCredentials(clientId)),
+    async () => {
+      try {
+        const list = await listCredentials(clientId);
+        setRows(list ?? []);
+      } catch {
+        setRows([]);
+      }
+    },
     [clientId],
   );
   React.useEffect(() => {
     let cancelled = false;
-    void listCredentials(clientId).then((list) => !cancelled && setRows(list));
+    void listCredentials(clientId)
+      .then((list) => {
+        if (!cancelled) setRows(list ?? []);
+      })
+      .catch(() => {
+        if (!cancelled) setRows([]);
+      });
     return () => {
       cancelled = true;
     };

@@ -54,13 +54,21 @@ export function ChecklistPanel({ clientId }: { clientId: string }) {
 
   React.useEffect(() => {
     let cancelled = false;
-    void getChecklist(clientId).then((res) => {
-      if (!cancelled && res) {
-        setView(res);
-        setDirtyData(res.data);
-        setDirtyMeta(res.fieldMeta);
-      }
-    });
+    void getChecklist(clientId)
+      .then((res) => {
+        if (!cancelled) {
+          if (res) {
+            setView(res);
+            setDirtyData(res.data);
+            setDirtyMeta(res.fieldMeta);
+          } else {
+            setView(null);
+          }
+        }
+      })
+      .catch(() => {
+        if (!cancelled) setView(null);
+      });
     return () => {
       cancelled = true;
     };

@@ -211,7 +211,8 @@ export async function previewDemand(code: string): Promise<DemandPreview | null>
 }
 
 export async function loadDemandFormOptions(): Promise<DemandFormOptions | null> {
-  if (!(await currentMember())) return null;
+  const member = await currentMember();
+  if (!member) return { people: [], clients: [], platforms: [] };
   const [people, clients, platforms] = await Promise.all([
     prisma.user.findMany({ where: { NOT: { banned: true } }, select: { id: true, name: true, image: true }, orderBy: { name: "asc" } }),
     prisma.client.findMany({ select: { id: true, displayCode: true, name: true, logoUrl: true }, orderBy: { name: "asc" } }),

@@ -27,7 +27,7 @@ This section provides the essential knowledge for the engineer or AI agent imple
 - **Framework**: Next.js 16 (App Router with Server Actions).
 - **Database ORM**: Prisma 7 with `@prisma/adapter-pg` native PostgreSQL connection pool.
 - **Authentication**: Better-Auth with 2FA / TOTP (Google Authenticator) and role-based access control (Administrador, Operador, Visualizador).
-- **Styling & Components**: Tailwind CSS v4, Lucide Icons, and custom design tokens adhering to strict ergonomic laws (`planning/01-regras-gerais/design-tokens-and-laws.md`).
+- **Styling & Components**: Tailwind CSS v4, Lucide Icons, and custom design tokens adhering to strict ergonomic laws (detailed in Section 5 below).
 - **Tab Lifecycle**: Keep-alive client state store (`src/features/shell/tabs-store.ts`) preserving unsaved form states across tab switches.
 - **PDF Engine**: Client-side `jspdf` + `jspdf-autotable` generating 100% formatted, ready-to-print onboarding documentation with custom property logos and status badges.
 
@@ -204,7 +204,7 @@ npm run test:e2e
 
 ## 5. Design System & Ergonomic Laws
 
-The user interface follows strict operational standards detailed in [`planning/01-regras-gerais/design-tokens-and-laws.md`](planning/01-regras-gerais/design-tokens-and-laws.md):
+The user interface follows strict operational standards designed for desktop-first hotel operations:
 - **95% Monochromatic Palette**: Functional neutral graphite (`#1c1c1d`) with pure white/neutral surfaces and discrete line borders.
 - **Non-Chromatic Semantics**: Avoids ambiguous colored pills; states are communicated via explicit typography and unambiguous geometric icons.
 - **Zero Floating Toasts & Zero FABs**: All operational feedback is contained directly within triggering buttons and inline state containers.

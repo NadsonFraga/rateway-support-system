@@ -2,7 +2,7 @@
 
 import * as React from "react";
 import { AnimatePresence, motion } from "motion/react";
-import { AlertTriangle, ExternalLink, MessageCircle, MoreHorizontal, Phone, Settings, Trash2 } from "lucide-react";
+import { AlertTriangle, ExternalLink, MessageCircle, MoreHorizontal, Pencil, Phone, Settings, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { ComingSoon } from "@/components/ui/coming-soon";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
@@ -15,6 +15,7 @@ import { useRealtime } from "@/features/realtime/client";
 import { useShellUser } from "@/features/shell/shell-user";
 import { useCurrentTab, useTabs } from "@/features/shell/tabs-store";
 import { VaultPanel } from "@/features/vault/vault-panel";
+import { ChecklistPanel } from "@/features/checklist/checklist-panel";
 import { deleteClient, getClient } from "../actions";
 import { EditClientDialog } from "../client-dialog";
 import { CopyIcon, EntityLogo, ServicePills, useCopyFeedback } from "../components/bits";
@@ -28,7 +29,7 @@ import { TechnicalPanel } from "./technical";
 const SECTIONS = [
   { key: "visao-geral", label: "Visão Geral" },
   { key: "dados-tecnicos", label: "Dados Técnicos" },
-  { key: "checklist", label: "Checklist", soon: true },
+  { key: "checklist", label: "Checklist" },
   { key: "cofre", label: "Cofre de Credenciais" },
   { key: "cobranca", label: "Contrato & Cobrança" },
 ] as const;
@@ -130,7 +131,7 @@ function ClientSheet({ client, onChange, active }: { client: ClientDetail; onCha
             </motion.div>
           )}
         </AnimatePresence>
-        <motion.div variants={staggerItem} role="tablist" aria-label="Seções do cliente" className="flex h-10 items-end gap-6 border-b border-line-subtle px-6">
+        <motion.div variants={staggerItem} role="tablist" aria-label="Seções do cliente" className="flex h-8 items-end gap-5 border-b border-line-subtle px-6 bg-surface/20">
           {SECTIONS.map((item, index) => {
             const selected = item.key === section;
             return (
@@ -153,12 +154,12 @@ function ClientSheet({ client, onChange, active }: { client: ClientDetail; onCha
                   document.getElementById(`${id}-${next.key}`)?.focus();
                 }}
                 className={cn(
-                  "relative flex h-full items-center gap-1.5 rounded-t-md text-sm transition-colors outline-offset-[-2px]",
-                  selected ? "font-medium text-ink" : "text-ink-secondary hover:text-ink"
+                  "relative flex h-full items-center gap-1.5 rounded-t-md text-xs transition-colors outline-offset-[-2px] pb-1",
+                  selected ? "font-semibold text-ink" : "text-ink-secondary hover:text-ink font-medium"
                 )}
               >
-                {item.label}
-                {"soon" in item && <span className="text-xs font-normal text-ink-muted">Em breve</span>}
+                <span>{item.label}</span>
+                {"soon" in item && <span className="text-[10px] font-normal text-ink-muted">Em breve</span>}
                 {selected && (
                   <motion.span layoutId={`${id}-indicador`} transition={motionSprings.tabIndicator} className="absolute inset-x-0 -bottom-px h-0.5 rounded-full bg-ink" />
                 )}
@@ -171,11 +172,7 @@ function ClientSheet({ client, onChange, active }: { client: ClientDetail; onCha
       <div id={`${id}-painel`} role="tabpanel" aria-labelledby={`${id}-${section}`} className="min-h-0 flex-1 overflow-y-auto">
         {section === "visao-geral" && <OverviewPanel client={client} />}
         {section === "dados-tecnicos" && <TechnicalPanel client={client} canEdit={canEdit} onEdit={() => setSettingsOpen(true)} />}
-        {section === "checklist" && (
-          <div className="max-w-4xl px-6 py-6">
-            <ComingSoon title="Checklist de onboarding" description="O checklist de onboarding chega em uma próxima fase." />
-          </div>
-        )}
+        {section === "checklist" && <ChecklistPanel clientId={client.id} />}
         {section === "cofre" && <VaultPanel clientId={client.id} />}
         {section === "cobranca" && <BillingPanel client={client} />}
       </div>
@@ -192,91 +189,39 @@ function ClientSheet({ client, onChange, active }: { client: ClientDetail; onCha
 }
 
 function Identity({ client, canEdit, onOpenSettings }: { client: ClientDetail; canEdit: boolean; onOpenSettings: () => void }) {
-  const me = useShellUser();
-  const { copied, copy } = useCopyFeedback();
-  const [confirmDelete, setConfirmDelete] = React.useState(false);
-  const [deleteError, setDeleteError] = React.useState<string | null>(null);
-  const isAdmin = me.role === ROLES.administrador;
+  const primaryService = client.services[0]?.serviceName ?? "Cadastro/Revisão";
+  const primaryPhase = client.services[0]?.phase ?? "Em implantação";
 
   return (
-    <div className="flex items-start gap-4 px-6 py-5">
-      <EntityLogo name={client.name} logoUrl={client.logoUrl} size={40} />
-      <div className="flex min-w-0 flex-1 flex-col gap-1.5">
-        <div className="flex min-w-0 items-center gap-2">
-          <h1 className="truncate text-xl font-semibold tracking-[-0.015em] text-ink">{client.name}</h1>
+    <div className="flex items-center justify-between gap-4 border-b border-line-subtle bg-surface/50 px-6 py-2.5 shrink-0">
+      <div className="flex flex-col min-w-0">
+        <div className="flex items-center gap-2">
+          <h1 className="truncate text-base font-semibold tracking-[-0.015em] text-ink">{client.name}</h1>
           {client.website && (
             <a
               href={client.website}
               target="_blank"
               rel="noopener noreferrer"
               aria-label="Abrir site oficial em nova guia"
-              className="inline-flex size-6 items-center justify-center rounded text-ink-muted hover:text-ink"
+              className="inline-flex size-5 items-center justify-center rounded text-ink-muted hover:text-ink"
             >
-              <ExternalLink className="size-4 stroke-[1.75]" />
+              <ExternalLink className="size-3.5 stroke-[1.75]" />
             </a>
           )}
         </div>
-        <div className="flex flex-wrap items-center gap-3">
-          <button
-            type="button"
-            onClick={() => void copy("codigo", `#${client.code}`)}
-            aria-label={`Copiar código #${client.code}`}
-            className="group inline-flex h-6 items-center gap-1.5 rounded px-1 -ml-1 font-mono text-[13px] text-ink-muted hover:text-ink-secondary"
-          >
-            #{client.code}
-            <span className={cn("transition-opacity", copied === "codigo" ? "opacity-100" : "opacity-0 group-hover:opacity-100 group-focus-visible:opacity-100")}>
-              <CopyIcon done={copied === "codigo"} />
-            </span>
-            {copied === "codigo" && <span className="font-sans text-xs text-ink-secondary">Copiado</span>}
-          </button>
-          <ServicePills services={client.services.map((item) => ({ serviceId: item.serviceId, name: item.serviceName, phase: item.phase }))} />
+        <div className="flex items-center gap-2 text-xs text-ink-muted">
+          <span>{primaryService}</span>
+          <span>·</span>
+          <span>{primaryPhase}</span>
         </div>
       </div>
 
       <div className="flex shrink-0 items-center gap-2">
         <MainContact client={client} onOpenSettings={onOpenSettings} />
-        <Tooltip>
-          <TooltipTrigger asChild>
-            <Button variant="ghost" size="icon" aria-label="Configurações do cliente" onClick={onOpenSettings} className="[&_svg]:size-[18px]">
-              <Settings />
-            </Button>
-          </TooltipTrigger>
-          <TooltipContent>{canEdit ? "Configurações do cliente" : "Ver dados do cliente"}</TooltipContent>
-        </Tooltip>
-        {isAdmin && (
-          <DropdownMenu onOpenChange={(open) => !open && (setConfirmDelete(false), setDeleteError(null))}>
-            <DropdownMenuTrigger asChild>
-              <Button variant="ghost" size="icon" aria-label="Mais ações do cliente" className="[&_svg]:size-[18px]">
-                <MoreHorizontal />
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="w-72">
-              {deleteError ? (
-                <p role="alert" className="px-2 py-1.5 text-[13px] text-ink-secondary">
-                  {deleteError}
-                </p>
-              ) : (
-                <DropdownMenuItem
-                  variant="danger"
-                  disabled={client.hasCredentials}
-                  onSelect={(event) => {
-                    if (!confirmDelete) {
-                      event.preventDefault();
-                      setConfirmDelete(true);
-                      return;
-                    }
-                    void deleteClient(client.id).then((result) => !result.ok && setDeleteError(result.error));
-                  }}
-                >
-                  <Trash2 /> {confirmDelete ? "Confirmar exclusão" : "Excluir cliente"}
-                </DropdownMenuItem>
-              )}
-              {client.hasCredentials && (
-                <p className="px-2 pb-1.5 text-xs text-ink-muted">Clientes com acessos no Cofre não podem ser excluídos.</p>
-              )}
-            </DropdownMenuContent>
-          </DropdownMenu>
-        )}
+        <Button variant="outline" size="sm" onClick={onOpenSettings} className="h-8 gap-1.5 px-3 text-xs text-ink border-line-medium hover:bg-surface-hover">
+          <Pencil className="size-3.5" />
+          <span>{canEdit ? "Editar cliente" : "Ver dados"}</span>
+        </Button>
       </div>
     </div>
   );

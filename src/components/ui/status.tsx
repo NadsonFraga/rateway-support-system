@@ -46,7 +46,7 @@ export function StatusDot({ status, label }: { status: Status; label?: string })
 export function StatusBadge({ status, label }: { status: Status; label?: string }) {
   return (
     <span
-      className="inline-flex h-6 items-center gap-1.5 rounded-md border px-2 text-[13px] font-medium"
+      className="inline-flex h-6 max-w-full shrink-0 items-center gap-1.5 rounded-md border px-2 text-[13px] font-medium whitespace-nowrap"
       style={{
         color: `var(--status-${BADGE_KEY[status]}-text)`,
         backgroundColor: `var(--status-${BADGE_KEY[status]}-bg)`,

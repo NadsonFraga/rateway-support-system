@@ -52,7 +52,6 @@ async function main() {
     update: { name: instanceName },
     create: { id: "instancia", name: instanceName },
   });
-  await prisma.realtimeProbe.upsert({ where: { id: "teste" }, update: {}, create: { id: "teste" } });
 
   const existing = await prisma.user.findUnique({ where: { email: adminEmail } });
   if (existing) {

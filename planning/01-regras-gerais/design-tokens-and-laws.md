@@ -73,16 +73,16 @@ When any view containing metrics, timelines, or progress bars opens, components 
 }
 ```
 
-### 2.3 Operational Status Matrix (Canônica, tons suaves — D-80)
-Cores refletem fatos, nunca decoração. Esta tabela é a fonte única para todos os módulos (Demandas, Clientes, Cadastros, Dashboard). O significado de cada cor não mudou (D-02); só a intensidade.
+### 2.3 Operational Status Matrix (Canônica — D-80, reforçada em D-109)
+Cores refletem fatos, nunca decoração. Esta tabela é a fonte única para todos os módulos (Demandas, Clientes, Cadastros, Dashboard). O significado de cada cor não mudou (D-02); só a intensidade, reforçada em D-109 porque os tons suaves ficavam difíceis de ver.
 
 | Estado Semântico | Badge escuro (texto / fundo) | Badge claro (texto / fundo) | Micro-dot escuro / claro |
 | :--- | :--- | :--- | :--- |
-| **Em Andamento (normal)** | `#a6a6aa` / 13% do texto | `#454545` / `#d6d6d6` | `#9a9a9f` / `#7c7c80` |
-| **Aguardando Retorno** | `#8fb0cc` / 13% do texto | `#365670` / `#d0d9df` | `#7fa3c3` / `#4f7899` |
-| **Atenção de Prazo** (D-71) | `#d4b170` / 13% do texto | `#6f5317` / `#e0d6c0` | `#c9a25b` / `#a57f2e` |
-| **Atrasada / Crítica** | `#d89585` / 13% do texto | `#864033` / `#e4d1cb` | `#c98a7a` / `#b0614f` |
-| **Concluída** (exclusivo do histórico) | `#93b89b` / 13% do texto | `#3b6044` / `#cfdacf` | `#86ad8f` / `#5d8a68` |
+| **Em Andamento (normal)** | `#c2c2c6` / 16% do texto | `#3a3a3a` / `#d2d2d2` | `#a8a8ad` / `#6b6b70` |
+| **Aguardando Retorno** | `#8ec0ec` / 20% do dot | `#1f4f78` / `#c4d6e6` | `#6fa8db` / `#2f72a8` |
+| **Atenção de Prazo** (D-71) | `#ebc06b` / 20% do dot | `#5e4300` / `#ecd9a6` | `#e0b04f` / `#9c6e0a` |
+| **Atrasada / Crítica** | `#f09a86` / 20% do dot | `#7a2a1a` / `#efc6bb` | `#e5806a` / `#c0482f` |
+| **Concluída** (exclusivo do histórico) | `#8fd0a0` / 20% do dot | `#22552f` / `#c3dfc9` | `#79c08a` / `#3f8a52` |
 
 No código, cada valor é uma variável (`--status-*`, `--dot-*`) em `src/styles/tokens.css`.
 

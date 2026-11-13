@@ -2,6 +2,8 @@
 
 import { z } from "zod";
 import { prisma } from "@/lib/db";
+import { Prisma } from "@/generated/prisma/client";
+import { CATALOG_CATEGORIES, type CatalogCategory } from "@/features/settings/catalog-types";
 import { ROLES } from "@/features/auth/permissions";
 import { CLIENTS_TOPIC } from "@/features/clients/topics";
 import { holdsLock, releaseLock } from "@/features/locks/service";
@@ -21,8 +23,10 @@ export type CredentialRow = {
   channelLogoUrl: string | null;
   label: string | null;
   propertyId: string | null;
+  /** Vazio nos acessos pela conta da empresa (D-104). */
   username: string;
   extranetUrl: string | null;
+  companyAccount: boolean;
 };
 
 function topicFor(clientId: string) {
@@ -34,16 +38,21 @@ export async function listCredentials(clientId: string): Promise<CredentialRow[]
   if (!(await currentMember())) return null;
   const rows = await prisma.vaultCredential.findMany({
     where: { clientId },
-    include: { catalogItem: { select: { name: true, logoUrl: true, extranetUrl: true, position: true, category: true } } },
+    include: {
+      catalogItem: {
+        select: { name: true, logoUrl: true, extranetUrl: true, companyAccount: true, categories: { select: { category: true, position: true } } },
+      },
+    },
   });
-  const categoryOrder = ["canal", "channel_manager", "pms", "servico_interno"];
+  // Ordem do catálogo, pela primeira categoria do item (D-103).
+  const rank = (item: (typeof rows)[number]["catalogItem"]) => {
+    const first = item.categories
+      .map((entry) => ({ order: CATALOG_CATEGORIES.indexOf(entry.category as CatalogCategory), position: entry.position }))
+      .sort((a, b) => a.order - b.order)[0];
+    return first ? first.order * 100000 + first.position : Number.MAX_SAFE_INTEGER;
+  };
   return rows
-    .sort(
-      (a, b) =>
-        categoryOrder.indexOf(a.catalogItem.category) - categoryOrder.indexOf(b.catalogItem.category) ||
-        a.catalogItem.position - b.catalogItem.position ||
-        (a.label ?? "").localeCompare(b.label ?? "")
-    )
+    .sort((a, b) => rank(a.catalogItem) - rank(b.catalogItem) || (a.label ?? "").localeCompare(b.label ?? ""))
     .map((row) => ({
       id: row.id,
       catalogItemId: row.catalogItemId,
@@ -51,8 +60,9 @@ export async function listCredentials(clientId: string): Promise<CredentialRow[]
       channelLogoUrl: row.catalogItem.logoUrl,
       label: row.label,
       propertyId: row.propertyId,
-      username: decryptSecret(row.username as unknown as EncryptedSecret),
+      username: row.username ? decryptSecret(row.username as unknown as EncryptedSecret) : "",
       extranetUrl: row.extranetUrl ?? row.catalogItem.extranetUrl,
+      companyAccount: row.catalogItem.companyAccount,
     }));
 }
 
@@ -60,14 +70,15 @@ export async function listCredentials(clientId: string): Promise<CredentialRow[]
 export async function revealPassword(credentialId: string): Promise<string | null> {
   if (!(await currentMember())) return null;
   const row = await prisma.vaultCredential.findUnique({ where: { id: credentialId }, select: { password: true } });
-  return row ? decryptSecret(row.password as unknown as EncryptedSecret) : null;
+  return row?.password ? decryptSecret(row.password as unknown as EncryptedSecret) : null;
 }
 
 const credentialSchema = z.object({
   catalogItemId: z.string().min(1, "Escolha o canal."),
   label: z.string().trim().max(40),
   propertyId: z.string().trim().max(60),
-  username: z.string().trim().min(1, "Informe o usuário.").max(200),
+  /** Vazio nos acessos pela conta da empresa (D-104). */
+  username: z.string().trim().max(200),
   /** Vazio ao editar = mantém a senha atual. */
   password: z.string().max(200),
   extranetUrl: z
@@ -90,7 +101,7 @@ export async function loadCredential(credentialId: string): Promise<(Omit<Creden
     catalogItemId: row.catalogItemId,
     label: row.label ?? "",
     propertyId: row.propertyId ?? "",
-    username: decryptSecret(row.username as unknown as EncryptedSecret),
+    username: row.username ? decryptSecret(row.username as unknown as EncryptedSecret) : "",
     extranetUrl: row.extranetUrl ?? "",
   };
 }
@@ -104,21 +115,26 @@ export async function saveCredential(
   if (!user || user.role !== ROLES.administrador) return { ok: false, error: "Só o Administrador altera o Cofre." };
   const parsed = credentialSchema.safeParse(input);
   if (!parsed.success) return { ok: false, error: parsed.error.issues[0].message };
-  if (!credentialId && !parsed.data.password) return { ok: false, error: "Informe a senha." };
   if (credentialId && !(await holdsLock(prisma, "acesso", credentialId, user.id))) {
     return { ok: false, error: "Você não está mais editando. Outra pessoa assumiu ou a edição expirou." };
   }
   const channel = await prisma.catalogItem.findUnique({ where: { id: parsed.data.catalogItemId } });
   if (!channel) return { ok: false, error: "Canal não encontrado no catálogo." };
 
+  // Acesso pela conta da empresa (D-104): sem usuário e senha; o link da página da propriedade é obrigatório.
+  const company = channel.companyAccount;
+  if (company && !parsed.data.extranetUrl) return { ok: false, error: "Informe o link da página da propriedade." };
+  if (!company && !parsed.data.username) return { ok: false, error: "Informe o usuário." };
+  if (!company && !credentialId && !parsed.data.password) return { ok: false, error: "Informe a senha." };
+
   const data = {
     catalogItemId: parsed.data.catalogItemId,
     label: parsed.data.label || null,
     propertyId: parsed.data.propertyId || null,
-    username: encryptSecret(parsed.data.username),
+    username: company ? Prisma.DbNull : encryptSecret(parsed.data.username),
     // A URL só é guardada quando difere da do catálogo; senão vale sempre a do catálogo.
     extranetUrl: parsed.data.extranetUrl && parsed.data.extranetUrl !== channel.extranetUrl ? parsed.data.extranetUrl : null,
-    ...(parsed.data.password ? { password: encryptSecret(parsed.data.password) } : {}),
+    ...(company ? { password: Prisma.DbNull } : parsed.data.password ? { password: encryptSecret(parsed.data.password) } : {}),
   };
 
   if (credentialId) {
@@ -126,7 +142,7 @@ export async function saveCredential(
     await releaseLock(prisma, "acesso", credentialId, user.id);
   } else {
     await prisma.vaultCredential.create({
-      data: { ...data, clientId, password: encryptSecret(parsed.data.password) },
+      data: { ...data, clientId, password: company ? Prisma.DbNull : encryptSecret(parsed.data.password) },
     });
   }
   await publish(prisma, topicFor(clientId), "cofre:salvo", {});
@@ -145,9 +161,10 @@ export async function deleteCredential(credentialId: string): Promise<SaveResult
 /** Canais do catálogo (não arquivados) para o campo "Canal" do formulário. */
 export async function listVaultChannels() {
   if (!(await currentMember())) return null;
-  return prisma.catalogItem.findMany({
+  const items = await prisma.catalogItem.findMany({
     where: { archivedAt: null },
-    orderBy: [{ category: "asc" }, { position: "asc" }],
-    select: { id: true, name: true, category: true, logoUrl: true, extranetUrl: true },
+    orderBy: { name: "asc" },
+    select: { id: true, name: true, logoUrl: true, extranetUrl: true, companyAccount: true, categories: { select: { category: true } } },
   });
+  return items.map(({ categories, ...item }) => ({ ...item, categories: categories.map((entry) => entry.category as CatalogCategory) }));
 }

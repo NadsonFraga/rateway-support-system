@@ -18,6 +18,7 @@ import { listClients } from "../actions";
 import { NewClientDialog } from "../client-dialog";
 import { EntityLogo, ServicePills } from "../components/bits";
 import { CLIENT_STATUS_LABEL, type ClientStatus } from "../rules";
+import { DEMANDS_TOPIC } from "@/features/demands/topics";
 import { CLIENTS_TOPIC } from "../topics";
 import type { ClientSummary } from "../types";
 
@@ -59,6 +60,7 @@ export function ClientsTab() {
     };
   }, []);
   useRealtime(CLIENTS_TOPIC, () => void reload());
+  useRealtime(DEMANDS_TOPIC, () => void reload());
 
   const allServices = React.useMemo(() => {
     const map = new Map<string, string>();
@@ -168,7 +170,7 @@ export function ClientsTab() {
       </div>
 
       <div role="table" aria-label="Clientes" className="px-4" onKeyDown={onListKey}>
-        <div role="row" className="grid h-9 grid-cols-[minmax(240px,2fr)_minmax(200px,2fr)_90px_minmax(120px,1fr)_80px] items-center gap-3 px-4 text-xs text-ink-muted">
+        <div role="row" className="grid h-9 grid-cols-[minmax(180px,2fr)_minmax(140px,2fr)_90px_minmax(100px,1fr)_80px] items-center gap-3 px-4 text-xs text-ink-muted">
           <span role="columnheader">Estabelecimento</span>
           <span role="columnheader">Serviços</span>
           <span role="columnheader">Sistemas</span>
@@ -205,7 +207,7 @@ export function ClientsTab() {
                 onFocus={() => setSelected(index)}
                 onClick={(event) => open(client, wantsNewTab(event))}
                 onAuxClick={(event) => event.button === 1 && open(client, true)}
-                className="grid h-11 cursor-pointer grid-cols-[minmax(240px,2fr)_minmax(200px,2fr)_90px_minmax(120px,1fr)_80px] items-center gap-3 rounded-md border-b border-line-subtle px-4 text-sm transition-colors duration-100 outline-offset-[-2px] hover:bg-surface-hover"
+                className="grid h-11 cursor-pointer grid-cols-[minmax(180px,2fr)_minmax(140px,2fr)_90px_minmax(100px,1fr)_80px] items-center gap-3 rounded-md border-b border-line-subtle px-4 text-sm transition-colors duration-100 outline-offset-[-2px] hover:bg-surface-hover"
               >
                 <span role="cell" className="flex min-w-0 items-center gap-2.5">
                   <EntityLogo name={client.name} logoUrl={client.logoUrl} className={client.status !== "ativo" ? "opacity-60" : undefined} />
@@ -213,8 +215,8 @@ export function ClientsTab() {
                     {client.name}
                   </span>
                 </span>
-                <span role="cell" className="min-w-0 overflow-hidden">
-                  <ServicePills services={client.services} showAll={client.status !== "ativo"} />
+                <span role="cell" className="min-w-0">
+                  <ServicePills services={client.services} showAll={client.status !== "ativo"} compact />
                 </span>
                 <span role="cell">
                   <Systems client={client} />
@@ -222,8 +224,8 @@ export function ClientsTab() {
                 <span role="cell" className="truncate text-[13px] text-ink-secondary">
                   {[client.city, client.state].filter(Boolean).join(", ")}
                 </span>
-                <span role="cell" className="tabular text-right text-ink-muted" aria-label="Demandas: chegam na Etapa 1.4">
-                  —
+                <span role="cell" className={cn("tabular text-right", client.openDemands ? "text-ink-secondary" : "text-ink-muted")}>
+                  {client.openDemands || "—"}
                 </span>
               </div>
             ))}
@@ -248,7 +250,7 @@ export function ClientsTab() {
 function Systems({ client }: { client: ClientSummary }) {
   const { channelManager: cm, pms } = client;
   if (!cm && !pms) return <span className="text-[13px] text-ink-muted">—</span>;
-  const same = cm && pms && cm.name.toLowerCase() === pms.name.toLowerCase();
+  const same = cm && pms && cm.id === pms.id;
   return (
     <Tooltip delayDuration={300}>
       <TooltipTrigger asChild>

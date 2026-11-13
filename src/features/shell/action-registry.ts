@@ -1,6 +1,6 @@
 // Registro de ações e atalhos (sistema-de-abas.md 3, D-81). Personalização por usuário: Fase 2.
 
-export type ActionId = "tabs.new" | "tabs.close" | "tabs.next" | "tabs.prev" | "command_bar.open";
+export type ActionId = "tabs.new" | "tabs.close" | "tabs.next" | "tabs.prev" | "command_bar.open" | "demand.new";
 
 export type Shortcut = { code: string; alt?: boolean; ctrl?: boolean; shift?: boolean; label: string };
 
@@ -14,6 +14,8 @@ export const DEFAULT_SHORTCUTS: Record<ActionId, Shortcut> = {
   "tabs.next": { code: "Period", alt: true, label: "Alt+." },
   "tabs.prev": { code: "Comma", alt: true, label: "Alt+," },
   "command_bar.open": { code: "KeyK", ctrl: true, label: "Ctrl+K" },
+  // Sem modificador (D-59): só vale fora de campos de texto.
+  "demand.new": { code: "KeyC", label: "C" },
 };
 
 export const ACTION_LABEL: Record<ActionId, string> = {
@@ -22,6 +24,7 @@ export const ACTION_LABEL: Record<ActionId, string> = {
   "tabs.next": "Próxima aba",
   "tabs.prev": "Aba anterior",
   "command_bar.open": "Buscar",
+  "demand.new": "Nova demanda",
 };
 
 type KeyLike = Pick<KeyboardEvent, "code" | "altKey" | "ctrlKey" | "metaKey" | "shiftKey">;

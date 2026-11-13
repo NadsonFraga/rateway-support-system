@@ -1,11 +1,10 @@
 "use client";
 
 import * as React from "react";
-import { Settings, SlidersHorizontal } from "lucide-react";
+import { Building2, Settings, SlidersHorizontal } from "lucide-react";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { cn } from "@/lib/utils";
 import { listClients } from "@/features/clients/actions";
-import { EntityLogo } from "@/features/clients/components/bits";
 import { CLIENT_STATUS_LABEL, phaseKind } from "@/features/clients/rules";
 import { CLIENTS_TOPIC } from "@/features/clients/topics";
 import type { ClientSummary } from "@/features/clients/types";
@@ -17,7 +16,7 @@ const WIDTH_KEY = "sidebar-largura";
 const DISPLAY_KEY = "sidebar-exibicao";
 export const SIDEBAR_MIN = 200;
 export const SIDEBAR_MAX = 420;
-export const SIDEBAR_DEFAULT = 260;
+export const SIDEBAR_DEFAULT = 220;
 
 type GroupBy = "servico" | "status" | "nenhum";
 type SortBy = "alteracoes" | "inclusao" | "az" | "za" | "demandas";
@@ -162,8 +161,7 @@ const SORTERS: Record<SortBy, (a: ClientSummary, b: ClientSummary) => number> = 
   inclusao: (a, b) => a.createdAt.localeCompare(b.createdAt),
   az: (a, b) => a.name.localeCompare(b.name, "pt-BR"),
   za: (a, b) => b.name.localeCompare(a.name, "pt-BR"),
-  // Demandas chegam na Etapa 1.4; até lá, ordem alfabética.
-  demandas: (a, b) => a.name.localeCompare(b.name, "pt-BR"),
+  demandas: (a, b) => b.openDemands - a.openDemands || a.name.localeCompare(b.name, "pt-BR"),
 };
 
 /** Grupos da árvore. Inativos não aparecem; no agrupamento por serviço, o cliente aparece em cada serviço ativo. */
@@ -257,12 +255,25 @@ function ClientTree() {
                   onAuxClick={(event) => event.button === 1 && navigate("cliente", { codigo: client.code }, true)}
                   aria-current={activeCode === client.code ? "page" : undefined}
                   className={cn(
-                    "flex h-8 w-full min-w-0 items-center gap-2 rounded-lg px-2 text-left text-[13px] font-medium tracking-[-0.012em]",
-                    activeCode === client.code ? "bg-accent-subdued text-ink" : "text-ink-secondary hover:bg-surface-hover hover:text-ink"
+                    "group relative flex h-9 w-full min-w-0 items-center gap-2.5 rounded-lg px-2.5 text-left text-[13px] font-medium tracking-[-0.012em] transition-colors",
+                    activeCode === client.code
+                      ? "bg-accent-subdued font-semibold text-ink before:absolute before:left-0 before:top-1/2 before:h-4 before:w-[3px] before:-translate-y-1/2 before:rounded-r before:bg-yellow-fact"
+                      : "text-ink-secondary hover:bg-surface-hover hover:text-ink"
                   )}
                 >
-                  <EntityLogo name={client.name} logoUrl={client.logoUrl} size={16} />
-                  <span className="truncate">{client.name}</span>
+                  <Building2
+                    className={cn(
+                      "size-4 shrink-0 stroke-[1.75]",
+                      activeCode === client.code ? "text-ink" : "text-ink-muted group-hover:text-ink"
+                    )}
+                    aria-hidden
+                  />
+                  <span className="truncate flex-1">{client.name}</span>
+                  {client.openDemands > 0 && (
+                    <span className="text-xs font-normal tabular-nums text-ink-muted">
+                      {client.openDemands}
+                    </span>
+                  )}
                 </button>
               ))}
             </div>

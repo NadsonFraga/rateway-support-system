@@ -8,17 +8,9 @@ const PUBLIC_PATHS = ["/entrar", "/sair", "/arquivos"];
 export function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
-  // Telas de desenvolvimento não existem em produção.
-  if (pathname.startsWith("/dev") && process.env.NODE_ENV === "production") {
-    return new NextResponse(null, { status: 404 });
-  }
-
   if (PUBLIC_PATHS.some((path) => pathname === path || pathname.startsWith(`${path}/`))) {
     return NextResponse.next();
   }
-
-  // O catálogo de componentes é público em desenvolvimento.
-  if (pathname.startsWith("/dev/componentes")) return NextResponse.next();
 
   if (!getSessionCookie(request)) {
     return NextResponse.redirect(new URL("/entrar", request.url));

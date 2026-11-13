@@ -2,7 +2,7 @@
 
 import * as React from "react";
 import { Dialog as DialogPrimitive } from "radix-ui";
-import { FilePen, Inbox, LogOut, Monitor, Moon, Plus, Settings, Sun, UserRound } from "lucide-react";
+import { ClipboardList, FilePen, Inbox, LogOut, Monitor, Moon, Plus, Settings, Sun, UserRound } from "lucide-react";
 import {
   Command,
   CommandEmpty,
@@ -13,6 +13,9 @@ import {
   CommandShortcut,
 } from "@/components/ui/command";
 import { searchClients } from "@/features/clients/actions";
+import { searchDemands } from "@/features/demands/actions";
+import { useDemandDrawer } from "@/features/demands/drawer-store";
+import { DEMAND_STATUS_LABEL, type DemandStatus } from "@/features/demands/rules";
 import { EntityLogo } from "@/features/clients/components/bits";
 import { useTheme } from "@/features/settings/use-theme";
 import { DEFAULT_SHORTCUTS } from "./action-registry";
@@ -28,7 +31,7 @@ type CommandPaletteProps = {
   onSendTestNotification: () => void;
 };
 
-// Paleta Ctrl+K: clientes (nome ou código), módulos, conta, tema e sair. Demandas entram na Etapa 1.4.
+// Paleta Ctrl+K: demandas e clientes (título, nome ou código), módulos, conta, tema e sair.
 export function CommandPalette({
   open,
   onOpenChange,
@@ -47,12 +50,15 @@ export function CommandPalette({
   const { setPreference } = useTheme();
   const [search, setSearch] = React.useState("");
   const [clients, setClients] = React.useState<{ code: string; name: string; logoUrl: string | null }[]>([]);
+  const [demands, setDemands] = React.useState<{ code: string; title: string; status: DemandStatus }[]>([]);
+  const openDemand = useDemandDrawer((state) => state.open);
 
   React.useEffect(() => {
     if (search.trim().length < 2) return;
     let cancelled = false;
     const timer = window.setTimeout(() => {
       void searchClients(search).then((found) => !cancelled && setClients(found));
+      void searchDemands(search).then((found) => !cancelled && setDemands(found));
     }, 150);
     return () => {
       cancelled = true;
@@ -60,6 +66,7 @@ export function CommandPalette({
     };
   }, [search]);
   const clientResults = search.trim().length < 2 ? [] : clients;
+  const demandResults = search.trim().length < 2 ? [] : demands;
 
   function run(action: () => void) {
     onOpenChange(false);
@@ -98,6 +105,23 @@ export function CommandPalette({
             />
             <CommandList>
               <CommandEmpty>Nada encontrado.</CommandEmpty>
+              {demandResults.length > 0 && (
+                <CommandGroup heading="Demandas">
+                  {demandResults.map((demand) => (
+                    <CommandItem
+                      key={demand.code}
+                      value={`demanda ${demand.code} ${demand.title} ${search}`}
+                      onSelect={() => run(() => openDemand(demand.code, []))}
+                    >
+                      <ClipboardList aria-hidden />
+                      <span className="truncate">{demand.title}</span>
+                      <CommandShortcut>
+                        {DEMAND_STATUS_LABEL[demand.status]} · #{demand.code}
+                      </CommandShortcut>
+                    </CommandItem>
+                  ))}
+                </CommandGroup>
+              )}
               {clientResults.length > 0 && (
                 <CommandGroup heading="Clientes">
                   {clientResults.map((client) => (

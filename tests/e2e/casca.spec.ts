@@ -22,7 +22,7 @@ test("abas: o que foi digitado continua ao trocar de aba, com ponto de não salv
   await expect(tab(page, "Início")).toHaveAttribute("aria-selected", "true");
 
   await openDraft(page);
-  const title = page.getByLabel("Título");
+  const title = page.getByLabel("Título", { exact: true });
   await title.fill("Texto que não pode sumir");
   await expect(tab(page, /Rascunho de teste 1/).getByRole("img", { name: "Alterações não salvas" })).toBeVisible();
 
@@ -31,13 +31,13 @@ test("abas: o que foi digitado continua ao trocar de aba, com ponto de não salv
   await expect(page.getByRole("heading", { name: "Demandas", exact: true })).toBeVisible();
 
   await tab(page, /Rascunho de teste 1/).click();
-  await expect(page.getByLabel("Título")).toHaveValue("Texto que não pode sumir");
+  await expect(page.getByLabel("Título", { exact: true })).toHaveValue("Texto que não pode sumir");
 
   // Fechar com alteração não salva pede confirmação.
   await tab(page, /Rascunho de teste 1/).locator("[data-fechar-aba]").click();
   await expect(page.getByRole("dialog", { name: "Descartar alterações?" })).toBeVisible();
   await page.getByRole("button", { name: "Continuar editando" }).click();
-  await expect(page.getByLabel("Título")).toHaveValue("Texto que não pode sumir");
+  await expect(page.getByLabel("Título", { exact: true })).toHaveValue("Texto que não pode sumir");
   await tab(page, /Rascunho de teste 1/).locator("[data-fechar-aba]").click();
   await page.getByRole("button", { name: "Descartar e fechar" }).click();
   await expect(tab(page, /Rascunho de teste 1/)).toHaveCount(0);
@@ -139,7 +139,7 @@ test("prints e acessibilidade (axe) da casca nos dois temas", async ({ browser }
     const nav = page.getByRole("navigation", { name: "Módulos" });
     await nav.getByRole("button", { name: "Demandas" }).click();
     await openDraft(page);
-    await page.getByLabel("Título").fill("Conferência de cadastro");
+    await page.getByLabel("Título", { exact: true }).fill("Conferência de cadastro");
     await page.waitForTimeout(400);
     await page.screenshot({ path: `${PRINTS}/casca-abas-${theme}.png` });
     await check("casca");

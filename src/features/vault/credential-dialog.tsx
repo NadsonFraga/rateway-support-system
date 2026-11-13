@@ -6,25 +6,62 @@ import { Input } from "@/components/ui/input";
 import { Select } from "@/components/ui/select";
 import type { SaveState } from "@/components/ui/save-button";
 import { RecordDialog } from "@/features/clients/components/record-dialog";
-import { CATALOG_CATEGORIES, CATALOG_CATEGORY_LABEL } from "@/features/settings/catalog-types";
-import { listVaultChannels, loadCredential, saveCredential, type CredentialInput } from "./actions";
+import {
+  CATALOG_CATEGORIES,
+  CATALOG_CATEGORY_LABEL,
+} from "@/features/settings/catalog-types";
+import {
+  listVaultChannels,
+  loadCredential,
+  saveCredential,
+  type CredentialInput,
+} from "./actions";
 
-type Channel = NonNullable<Awaited<ReturnType<typeof listVaultChannels>>>[number];
+type Channel = NonNullable<
+  Awaited<ReturnType<typeof listVaultChannels>>
+>[number];
 
-const EMPTY: CredentialInput = { catalogItemId: "", label: "", propertyId: "", username: "", password: "", extranetUrl: "" };
+const EMPTY: CredentialInput = {
+  catalogItemId: "",
+  label: "",
+  propertyId: "",
+  username: "",
+  password: "",
+  extranetUrl: "",
+};
 
 /** Adicionar ou editar um acesso do Cofre (só Administrador, D-36). Editar usa a trava "acesso". */
-export function CredentialDialog({ clientId, credentialId, onClose }: { clientId: string; credentialId: string | null; onClose: () => void }) {
-  const [loaded, setLoaded] = React.useState<{ channels: Channel[]; saved: CredentialInput } | null>(null);
+export function CredentialDialog({
+  clientId,
+  credentialId,
+  onClose,
+}: {
+  clientId: string;
+  credentialId: string | null;
+  onClose: () => void;
+}) {
+  const [loaded, setLoaded] = React.useState<{
+    channels: Channel[];
+    saved: CredentialInput;
+  } | null>(null);
   React.useEffect(() => {
     let cancelled = false;
-    void Promise.all([listVaultChannels(), credentialId ? loadCredential(credentialId) : Promise.resolve(null)]).then(([channels, current]) => {
+    void Promise.all([
+      listVaultChannels(),
+      credentialId ? loadCredential(credentialId) : Promise.resolve(null),
+    ]).then(([channels, current]) => {
       if (cancelled || !channels) return;
       const saved: CredentialInput = current
         ? {
             ...current,
             password: "",
-            extranetUrl: current.extranetUrl || (channels.find((item) => item.id === current.catalogItemId)?.extranetUrl ?? ""),
+            extranetUrl:
+              current.extranetUrl ||
+              (channels.find((item) => item.id === current.catalogItemId)
+                ?.companyAccount
+                ? ""
+                : (channels.find((item) => item.id === current.catalogItemId)
+                    ?.extranetUrl ?? "")),
           }
         : EMPTY;
       setLoaded({ channels, saved });
@@ -33,7 +70,14 @@ export function CredentialDialog({ clientId, credentialId, onClose }: { clientId
       cancelled = true;
     };
   }, [credentialId]);
-  return loaded ? <CredentialInner clientId={clientId} credentialId={credentialId} {...loaded} onClose={onClose} /> : null;
+  return loaded ? (
+    <CredentialInner
+      clientId={clientId}
+      credentialId={credentialId}
+      {...loaded}
+      onClose={onClose}
+    />
+  ) : null;
 }
 
 function CredentialInner({
@@ -88,6 +132,9 @@ function CredentialInner({
     >
       {({ editing, markActivity }) => {
         const value = editing ? draft : saved;
+        const company =
+          channels.find((item) => item.id === value.catalogItemId)
+            ?.companyAccount ?? false;
         const patch = (next: Partial<CredentialInput>) => {
           setDraft((current) => ({ ...current, ...next }));
           setError(null);
@@ -103,15 +150,28 @@ function CredentialInner({
                   disabled={!editing}
                   autoFocus={creating}
                   onChange={(event) => {
-                    const channel = channels.find((item) => item.id === event.target.value);
-                    patch({ catalogItemId: event.target.value, extranetUrl: channel?.extranetUrl ?? "" });
+                    const channel = channels.find(
+                      (item) => item.id === event.target.value,
+                    );
+                    // Conta da empresa: o link é da propriedade, então começa vazio (o do catálogo é a página geral).
+                    patch({
+                      catalogItemId: event.target.value,
+                      extranetUrl: channel?.companyAccount
+                        ? ""
+                        : (channel?.extranetUrl ?? ""),
+                    });
                   }}
                 >
                   <option value="">Escolha o canal</option>
                   {CATALOG_CATEGORIES.map((category) => {
-                    const items = channels.filter((item) => item.category === category);
+                    const items = channels.filter(
+                      (item) => item.categories[0] === category,
+                    );
                     return items.length ? (
-                      <optgroup key={category} label={CATALOG_CATEGORY_LABEL[category]}>
+                      <optgroup
+                        key={category}
+                        label={CATALOG_CATEGORY_LABEL[category]}
+                      >
                         {items.map((item) => (
                           <option key={item.id} value={item.id}>
                             {item.name}
@@ -122,30 +182,83 @@ function CredentialInner({
                   })}
                 </Select>
               </Field>
-              <Field label="Rótulo (opcional)" htmlFor="acesso-rotulo" help="Para diferenciar duas contas do mesmo canal.">
-                <Input id="acesso-rotulo" value={value.label} disabled={!editing} maxLength={40} onChange={(event) => patch({ label: event.target.value })} />
-              </Field>
-            </div>
-            <Field label="ID da propriedade" htmlFor="acesso-id">
-              <Input id="acesso-id" className="font-mono" value={value.propertyId} disabled={!editing} maxLength={60} onChange={(event) => patch({ propertyId: event.target.value })} />
-            </Field>
-            <div className="grid grid-cols-2 gap-4">
-              <Field label="Usuário" htmlFor="acesso-usuario">
-                <Input id="acesso-usuario" autoComplete="off" value={value.username} disabled={!editing} onChange={(event) => patch({ username: event.target.value })} />
-              </Field>
-              <Field label="Senha" htmlFor="acesso-senha" help={creating ? undefined : "Deixe vazio para manter a senha atual."}>
+              <Field
+                label="Rótulo (opcional)"
+                htmlFor="acesso-rotulo"
+                help="Para diferenciar duas contas do mesmo canal."
+              >
                 <Input
-                  id="acesso-senha"
-                  type="password"
-                  autoComplete="new-password"
-                  value={value.password}
+                  id="acesso-rotulo"
+                  value={value.label}
                   disabled={!editing}
-                  placeholder={creating ? undefined : "••••••••••••"}
-                  onChange={(event) => patch({ password: event.target.value })}
+                  maxLength={40}
+                  onChange={(event) => patch({ label: event.target.value })}
                 />
               </Field>
             </div>
-            <Field label="URL da extranet" htmlFor="acesso-extranet" help="Vem do catálogo de canais. Mude só se este cliente usar outro endereço.">
+            <Field label="ID da propriedade" htmlFor="acesso-id">
+              <Input
+                id="acesso-id"
+                className="font-mono"
+                value={value.propertyId}
+                disabled={!editing}
+                maxLength={60}
+                onChange={(event) => patch({ propertyId: event.target.value })}
+              />
+            </Field>
+            {!company && (
+              <div className="grid grid-cols-2 gap-4">
+                <Field label="Usuário" htmlFor="acesso-usuario">
+                  <Input
+                    id="acesso-usuario"
+                    autoComplete="off"
+                    value={value.username}
+                    disabled={!editing}
+                    onChange={(event) =>
+                      patch({ username: event.target.value })
+                    }
+                  />
+                </Field>
+                <Field
+                  label="Senha"
+                  htmlFor="acesso-senha"
+                  help={
+                    creating
+                      ? undefined
+                      : "Deixe vazio para manter a senha atual."
+                  }
+                >
+                  <Input
+                    id="acesso-senha"
+                    type="password"
+                    autoComplete="new-password"
+                    value={value.password}
+                    disabled={!editing}
+                    placeholder={creating ? undefined : "••••••••••••"}
+                    onChange={(event) =>
+                      patch({ password: event.target.value })
+                    }
+                  />
+                </Field>
+              </div>
+            )}
+            {company && (
+              <p className="text-[13px] text-ink-secondary">
+                Este canal entra pela conta da empresa: não há usuário nem senha
+                para guardar.
+              </p>
+            )}
+            <Field
+              label={
+                company ? "Link da página da propriedade" : "URL da extranet"
+              }
+              htmlFor="acesso-extranet"
+              help={
+                company
+                  ? "Endereço da página desta propriedade no canal, começando com https://"
+                  : "Vem do catálogo de canais. Mude só se este cliente usar outro endereço."
+              }
+            >
               <Input
                 id="acesso-extranet"
                 type="url"

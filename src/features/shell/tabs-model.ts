@@ -131,7 +131,15 @@ export function tabForPath(pathname: string): { kind: TabKind; params?: Record<s
   if (rascunho) return { kind: "rascunho", params: { numero: rascunho[1] } };
   const cliente = path.match(/^\/clientes\/([^/]{1,40})$/);
   if (cliente) return { kind: "cliente", params: { codigo: decodeURIComponent(cliente[1]).toUpperCase() } };
+  // Demanda aberta no painel lateral: a aba é a de Demandas (o painel abre pela casca).
+  if (/^\/demandas\/[^/]{1,40}$/.test(pathname)) return { kind: "demandas" };
   if (path.startsWith("/nova-aba")) return { kind: "nova" };
   const entry = Object.entries(PATH_BY_KIND).find(([, value]) => value === path);
   return entry ? { kind: entry[0] as TabKind } : null;
+}
+
+/** Código da demanda no endereço (/demandas/DEM-0042), para abrir o painel lateral no F5. */
+export function demandCodeForPath(pathname: string) {
+  const match = pathname.match(/^\/demandas\/([^/]{1,40})$/);
+  return match ? decodeURIComponent(match[1]).toUpperCase() : null;
 }

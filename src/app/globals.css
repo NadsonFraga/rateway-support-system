@@ -19,6 +19,7 @@
   --color-surface-elevated: var(--bg-surface-elevated);
   --color-surface-hover: var(--bg-surface-hover);
   --color-surface-active: var(--bg-surface-active);
+  --color-input-bg: var(--bg-input);
 
   --color-line-subtle: var(--border-subtle);
   --color-line-medium: var(--border-medium);
@@ -55,6 +56,10 @@
   --color-destructive: var(--fact-coral);
   --color-coral: var(--fact-coral);
   --color-amber-fact: var(--fact-amber);
+  --color-cyan-fact: #43bdd4;
+  --color-yellow-fact: #ffe269;
+  --color-pink-fact: #ff5c7f;
+  --color-fact-coral: #ff5c7f;
 
   --radius-sm: 0.375rem;
   --radius-md: 0.5rem;
@@ -111,4 +116,125 @@
   .theme-transition * {
     transition: none !important;
   }
+}
+
+/* Texto formatado das demandas (D-96): descrição e comentários. */
+.rich-text {
+  line-height: 1.55;
+}
+.rich-text p + p,
+.rich-text p + ul,
+.rich-text p + ol,
+.rich-text ul + p,
+.rich-text ol + p {
+  margin-top: 0.5rem;
+}
+.rich-text ul {
+  list-style: disc;
+  padding-left: 1.25rem;
+}
+.rich-text ol {
+  list-style: decimal;
+  padding-left: 1.25rem;
+}
+.rich-text a {
+  color: var(--text-primary);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+.rich-text strong {
+  font-weight: 600;
+}
+.rich-text p.is-editor-empty:first-child::before {
+  content: attr(data-placeholder);
+  color: var(--text-muted);
+  float: left;
+  height: 0;
+  pointer-events: none;
+}
+
+/* Canonical Rateway Form & Field Styling (Sistema Rateway parity) */
+.fsec {
+  background: var(--bg-surface);
+  border: 1px solid var(--border-subtle);
+  border-radius: 8px;
+  overflow: hidden;
+}
+.fsec > h3 {
+  font-size: 13.5px;
+  color: var(--text-secondary);
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  padding: 10px 16px 6px;
+  margin: 0;
+}
+.fld {
+  display: grid;
+  grid-template-columns: minmax(140px, 210px) minmax(0, 1fr) auto;
+  gap: 8px 16px;
+  align-items: start;
+  padding: 9px 16px;
+  border-top: 1px solid var(--border-subtle);
+}
+.fsec > .fld:first-of-type,
+.fsec > h3 + .fld {
+  border-top: 0;
+}
+.fld > label,
+.fld > .lab {
+  padding-top: 6px;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text-primary);
+}
+.fld .hint {
+  display: block;
+  color: var(--text-muted);
+  font-size: 11.5px;
+  font-weight: 400;
+  margin-top: 2px;
+}
+.fld input.f,
+.fld select.f,
+.fld textarea.f,
+input.f,
+select.f,
+textarea.f {
+  width: 100%;
+  min-width: 0;
+  border: 1px solid var(--border-subtle);
+  border-bottom: 1px solid var(--border-medium);
+  background: var(--bg-input);
+  border-radius: 6px;
+  padding: 6px 10px;
+  color: var(--text-primary);
+  font-size: 13px;
+  outline: 0;
+  transition: border-color 0.15s ease;
+}
+input.f:focus,
+select.f:focus,
+textarea.f:focus {
+  border-bottom: 2px solid var(--cyan-fact);
+  padding-bottom: 5px;
+}
+.stdot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  border: 1.5px solid var(--text-muted);
+  display: block;
+  margin-top: 8px;
+}
+.stdot.ok {
+  background: var(--cyan-fact);
+  border-color: var(--cyan-fact);
+}
+.stdot.pend {
+  background: var(--fact-coral);
+  border-color: var(--fact-coral);
+}
+.stdot.conf {
+  background: var(--yellow-fact);
+  border-color: var(--yellow-fact);
 }

@@ -22,7 +22,7 @@ const clientInclude = {
   services: { include: { service: true }, orderBy: { startedAt: "asc" as const } },
   channelManager: { select: { id: true, name: true, logoUrl: true } },
   pms: { select: { id: true, name: true, logoUrl: true } },
-  _count: { select: { credentials: true } },
+  _count: { select: { credentials: true, demands: { where: { status: { notIn: ["concluida", "cancelada"] } } } } },
 };
 
 type ClientRow = NonNullable<Awaited<ReturnType<typeof findClient>>>;
@@ -56,6 +56,7 @@ function toSummary(row: ClientRow): ClientSummary {
     services: row.services.map((item) => ({ serviceId: item.serviceId, name: item.service.name, phase: item.phase })),
     channelManager: row.channelManager,
     pms: row.pms,
+    openDemands: row._count.demands,
     createdAt: row.createdAt.toISOString(),
     updatedAt: row.updatedAt.toISOString(),
   };
@@ -213,7 +214,7 @@ async function checkCatalogRefs(fields: { channelManagerId: string | null; pmsId
     [fields.pmsId, "pms"],
   ] as const) {
     if (!id) continue;
-    const item = await prisma.catalogItem.findFirst({ where: { id, category } });
+    const item = await prisma.catalogItem.findFirst({ where: { id, categories: { some: { category } } } });
     if (!item) return "Escolha um item do catálogo.";
   }
   return null;
@@ -377,9 +378,12 @@ export async function deleteClient(clientId: string): Promise<SaveResult<null>> 
   if (!user || user.role !== ROLES.administrador) return { ok: false, error: "Só o Administrador exclui clientes." };
   const client = await prisma.client.findUnique({
     where: { id: clientId },
-    select: { displayCode: true, _count: { select: { credentials: true } } },
+    select: { displayCode: true, _count: { select: { credentials: true, demands: true } } },
   });
   if (!client) return { ok: false, error: "Cliente não encontrado." };
+  if (client._count.demands > 0) {
+    return { ok: false, error: "Este cliente tem demandas e não pode ser excluído. Encerre os serviços para ele ficar Inativo." };
+  }
   if (client._count.credentials > 0) {
     return { ok: false, error: "Este cliente tem acessos no Cofre e não pode ser excluído. Encerre os serviços para ele ficar Inativo." };
   }
@@ -393,10 +397,10 @@ export async function loadClientFormOptions() {
   if (!(await currentMember())) return null;
   const [services, catalog] = await Promise.all([
     prisma.service.findMany({ orderBy: { position: "asc" } }),
-    prisma.catalogItem.findMany({
-      where: { category: { in: ["channel_manager", "pms"] }, archivedAt: null },
-      orderBy: [{ category: "asc" }, { position: "asc" }],
-      select: { id: true, name: true, category: true, logoUrl: true },
+    prisma.catalogItemCategory.findMany({
+      where: { category: { in: ["channel_manager", "pms"] }, item: { archivedAt: null } },
+      orderBy: { position: "asc" },
+      select: { category: true, item: { select: { id: true, name: true, logoUrl: true } } },
     }),
   ]);
   return {
@@ -406,8 +410,9 @@ export async function loadClientFormOptions() {
       kind: service.kind as "pontual" | "continuo",
       phases: service.phases,
     })),
-    channelManagers: catalog.filter((item) => item.category === "channel_manager"),
-    pmsList: catalog.filter((item) => item.category === "pms"),
+    // Um item pode ser Channel Manager e PMS ao mesmo tempo (D-103).
+    channelManagers: catalog.filter((entry) => entry.category === "channel_manager").map((entry) => entry.item),
+    pmsList: catalog.filter((entry) => entry.category === "pms").map((entry) => entry.item),
   };
 }
 

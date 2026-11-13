@@ -121,7 +121,7 @@ Detalhes em `design-tokens-and-laws.md`. Resumo:
 | ORM | **Prisma** — a "ponte" entre o código e o banco: descreve as tabelas num arquivo legível e cria/atualiza o banco com segurança (migrações). |
 | Autenticação | **Better Auth** com 2FA por TOTP (Google Authenticator). Confirmar que atende a: senha temporária com troca obrigatória, 3 perfis, sessão que expira. Se não atender, HARD STOP e apresentar alternativa. |
 | Tempo real | Servidor próprio, porque a hospedagem será uma **VPS** (ainda não contratada). Propor a solução (ex.: WebSocket ou SSE com PostgreSQL LISTEN/NOTIFY) na etapa 1.0 e pedir aprovação. |
-| Drive | Google Picker, app **interno** do Google Workspace da empresa (domínio próprio). |
+| Anexos & Drive | Inserção direta de links manuais com detecção de URLs do Google Drive/Docs e abertura em 1 clique (desacoplado do Google Picker API). |
 
 ### Ambiente
 - **Desenvolvimento:** no computador do usuário (Windows), em `localhost`. Antes de instalar qualquer coisa (Node.js, PostgreSQL, Docker…), HARD STOP explicando o que é e como instalar.

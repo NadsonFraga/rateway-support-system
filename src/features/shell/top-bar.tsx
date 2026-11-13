@@ -1,7 +1,7 @@
 "use client";
 
 import * as React from "react";
-import { ChevronRight, LogOut, Monitor, Moon, Search, Sun, UserRound } from "lucide-react";
+import { LogOut, Monitor, Moon, Search, Sun, UserRound } from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -23,6 +23,7 @@ import { InboxButton } from "@/features/inbox/inbox-button";
 import { useConnectionState } from "@/features/realtime/client";
 import { TAB_REGISTRY } from "./tab-registry";
 import { useTabs } from "./tabs-store";
+import { TabStrip } from "./tab-strip";
 
 
 function initials(name: string) {
@@ -45,52 +46,26 @@ export function TopBar({
   onSignOut: () => void;
 }) {
   return (
-    <header className="flex h-12 shrink-0 items-center gap-3 border-b border-line-subtle bg-sidebar px-3">
-      <span className="inline-flex h-7 max-w-[260px] items-center gap-2 truncate rounded-md bg-surface-hover px-2.5 text-[13px] font-semibold text-ink">
+    <header className="flex h-11 shrink-0 items-end gap-3 border-b border-line-subtle bg-sidebar px-3">
+      <span className="inline-flex h-7 max-w-[200px] shrink-0 items-center gap-2 truncate rounded-md bg-surface-hover px-2 text-[12px] font-semibold text-ink self-center">
         <InstanceLogo logos={instanceLogos} />
         <span className="truncate">{instanceName}</span>
       </span>
-      <Breadcrumb />
-      <div className="ml-auto flex items-center gap-1.5">
+      <TabStrip />
+      <div className="ml-auto flex shrink-0 items-center gap-1.5 self-center pb-0.5">
         <button
           type="button"
           onClick={onOpenSearch}
-          className="inline-flex h-8 items-center gap-2 rounded-lg border border-line-subtle bg-surface pr-1.5 pl-2.5 text-[13px] text-ink-secondary hover:bg-surface-hover hover:text-ink"
+          className="inline-flex h-7 items-center gap-2 rounded-lg border border-line-subtle bg-surface pr-1.5 pl-2 text-[12px] text-ink-secondary hover:bg-surface-hover hover:text-ink"
         >
-          <Search className="size-4 stroke-[1.75]" aria-hidden />
-          <span className="pr-6">Buscar</span>
+          <Search className="size-3.5 stroke-[1.75]" aria-hidden />
+          <span className="pr-3">Buscar</span>
           <Kbd>Ctrl K</Kbd>
         </button>
         <InboxButton userId={user.id} />
         <UserCapsule user={user} onSignOut={onSignOut} />
       </div>
     </header>
-  );
-}
-
-/** Trilha no estilo Windows 11: cada parte é clicável e leva à aba correspondente. */
-function Breadcrumb() {
-  const tabs = useTabs((state) => state.tabs);
-  const activeId = useTabs((state) => state.activeId);
-  const labels = useTabs((state) => state.labels);
-  const tab = tabs.find((item) => item.id === activeId);
-  if (!tab) return null;
-  const parts = TAB_REGISTRY[tab.kind].breadcrumb(tab, labels[tab.id]);
-
-  return (
-    <nav aria-label="Você está em" className="flex min-w-0 items-center gap-1 text-[13px]">
-      {parts.map((part, index) => (
-        <React.Fragment key={`${part}-${index}`}>
-          <ChevronRight className="size-4 shrink-0 stroke-[1.75] text-ink-muted" aria-hidden />
-          <span
-            className={cn("truncate", index === parts.length - 1 ? "text-ink" : "text-ink-secondary")}
-            aria-current={index === parts.length - 1 ? "page" : undefined}
-          >
-            {part}
-          </span>
-        </React.Fragment>
-      ))}
-    </nav>
   );
 }
 

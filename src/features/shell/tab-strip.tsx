@@ -39,8 +39,8 @@ export function TabStrip() {
   }
 
   return (
-    <div className="flex h-10 shrink-0 items-end gap-1 border-b border-line-subtle bg-sidebar px-2">
-      <div role="tablist" aria-label="Abas abertas" className="flex min-w-0 items-end gap-1 overflow-x-auto [scrollbar-width:none]">
+    <div className="flex min-w-0 flex-1 items-end gap-1 overflow-x-auto [scrollbar-width:none]">
+      <div role="tablist" aria-label="Abas abertas" className="flex min-w-0 items-end gap-1">
         {tabs.map((tab, index) => {
           const definition = TAB_REGISTRY[tab.kind];
           const title = definition.title(tab, labels[tab.id]);

@@ -12,6 +12,8 @@ const EDITORS: Record<string, string[]> = {
   cliente: [ROLES.administrador, ROLES.analistaImplantacao],
   servico: [ROLES.administrador, ROLES.analistaImplantacao],
   acesso: [ROLES.administrador],
+  // Os três perfis editam demandas (D-95).
+  demanda: [ROLES.administrador, ROLES.analistaImplantacao, ROLES.operadorRotina],
 };
 
 export type LockResult = { ok: boolean; holder: LockHolder | null; error?: string };

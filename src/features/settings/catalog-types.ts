@@ -19,11 +19,14 @@ export const CATALOG_CATEGORY_SINGULAR: Record<CatalogCategory, string> = {
 
 export type CatalogEntry = {
   id: string;
-  category: CatalogCategory;
+  /** Um item pode ter várias categorias (D-103), cada uma com sua posição. */
+  categories: CatalogCategory[];
+  positions: Partial<Record<CatalogCategory, number>>;
   name: string;
   logoUrl: string | null;
   extranetUrl: string | null;
-  position: number;
+  /** Acesso pela conta da empresa, sem usuário e senha (D-104). */
+  companyAccount: boolean;
   archived: boolean;
 };
 

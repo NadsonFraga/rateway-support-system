@@ -45,13 +45,13 @@ model Asset {
 /// Catálogo da instância: canais de venda, Channel Managers, PMS e serviços internos (white-label).
 model CatalogItem {
   id               String            @id @default(cuid())
-  /// "canal" | "channel_manager" | "pms" | "servico_interno"
-  category         String
   name             String
   logoUrl          String?
   extranetUrl      String?
-  /// Ordem das colunas na Matriz de Cadastros e no Cofre.
-  position         Int               @default(0)
+  /// Acesso pela conta da empresa (D-104): sem usuário e senha; o Cofre guarda só o link da página da propriedade.
+  companyAccount   Boolean           @default(false)
+  /// Categorias do item, cada uma com sua ordem (D-103).
+  categories       CatalogItemCategory[]
   /// Arquivado (D-88): some das listas, continua nos clientes que já usam.
   archivedAt       DateTime?
   createdAt        DateTime          @default(now())
@@ -59,9 +59,23 @@ model CatalogItem {
   asChannelManager Client[]          @relation("ClientChannelManager")
   asPms            Client[]          @relation("ClientPms")
   credentials      VaultCredential[]
+  demands          Demand[]
+  deployments      ChannelDeployment[]
 
-  @@index([category, position])
   @@map("catalog_items")
+}
+
+/// Categoria de um item do catálogo e a posição dele nela (ordem das colunas na Matriz e no Cofre).
+model CatalogItemCategory {
+  itemId   String
+  /// "canal" | "channel_manager" | "pms" | "servico_interno"
+  category String
+  position Int         @default(0)
+  item     CatalogItem @relation(fields: [itemId], references: [id], onDelete: Cascade)
+
+  @@id([itemId, category])
+  @@index([category, position])
+  @@map("catalog_item_categories")
 }
 
 /// Cliente / estabelecimento (clientes-design-v2.md). Status é calculado pelos serviços (D-26), nunca guardado.
@@ -94,6 +108,9 @@ model Client {
   pms              CatalogItem?      @relation("ClientPms", fields: [pmsId], references: [id])
   services         ClientService[]
   credentials      VaultCredential[]
+  demands          Demand[]
+  checklist        ClientChecklist?
+  deployments      ChannelDeployment[]
 
   @@index([name])
   @@map("clients")
@@ -127,10 +144,11 @@ model VaultCredential {
   /// Rótulo opcional quando o canal tem mais de um acesso (ex.: "Conta 2").
   label         String?
   propertyId    String?
-  /// { ciphertext, iv, authTag, keyVersion }
-  username      Json
-  /// { ciphertext, iv, authTag, keyVersion }
-  password      Json
+  /// { ciphertext, iv, authTag, keyVersion }. Vazio nos acessos pela conta da empresa (D-104).
+  username      Json?
+  /// { ciphertext, iv, authTag, keyVersion }. Vazio nos acessos pela conta da empresa (D-104).
+  password      Json?
+  /// Extranet própria deste acesso; nos acessos pela conta da empresa, o link da página da propriedade.
   extranetUrl   String?
   createdAt     DateTime    @default(now())
   updatedAt     DateTime    @updatedAt
@@ -139,6 +157,104 @@ model VaultCredential {
 
   @@index([clientId])
   @@map("vault_credentials")
+}
+
+/// Demanda (demandas-spec.md, D-95 a D-102). Código gerado pelo sistema (DEM-0042). Nunca é apagada (D-95).
+model Demand {
+  id                String             @id @default(cuid())
+  displayCode       String             @unique
+  title             String
+  /// Documento do editor (formato estruturado, nunca HTML) — D-96.
+  description       Json?
+  /// "a_fazer" | "em_andamento" | "aguardando_retorno" | "concluida" | "cancelada" (D-99)
+  status            String             @default("a_fazer")
+  /// "normal" | "alta" | "critica" (D-101)
+  priority          String             @default("normal")
+  dueDate           DateTime?          @db.Date
+  /// "HH:MM" quando o prazo tem hora.
+  dueTime           String?
+  clientId          String?
+  platformId        String?
+  /// Aprovação coletiva: Concluir só depois de todos confirmarem a parte.
+  requireAllConfirm Boolean            @default(false)
+  createdById       String
+  completedAt       DateTime?
+  completedById     String?
+  createdAt         DateTime           @default(now())
+  updatedAt         DateTime           @updatedAt
+  client            Client?            @relation(fields: [clientId], references: [id])
+  platform          CatalogItem?       @relation(fields: [platformId], references: [id])
+  createdBy         User               @relation("DemandCreator", fields: [createdById], references: [id])
+  completedBy       User?              @relation("DemandCompleter", fields: [completedById], references: [id])
+  assignees         DemandAssignee[]
+  subtasks          DemandSubtask[]
+  attachments       DemandAttachment[]
+  events            DemandEvent[]
+
+  @@index([status])
+  @@index([clientId])
+  @@map("demands")
+}
+
+/// Pessoa atribuída: "visto às" (primeira abertura) e "confirmou minha parte".
+model DemandAssignee {
+  demandId    String
+  userId      String
+  seenAt      DateTime?
+  confirmedAt DateTime?
+  demand      Demand    @relation(fields: [demandId], references: [id], onDelete: Cascade)
+  user        User      @relation(fields: [userId], references: [id])
+
+  @@id([demandId, userId])
+  @@index([userId])
+  @@map("demand_assignees")
+}
+
+model DemandSubtask {
+  id       String  @id @default(cuid())
+  demandId String
+  text     String
+  done     Boolean @default(false)
+  position Int     @default(0)
+  demand   Demand  @relation(fields: [demandId], references: [id], onDelete: Cascade)
+
+  @@index([demandId])
+  @@map("demand_subtasks")
+}
+
+/// Anexo do Google Drive: só o link (D-68).
+model DemandAttachment {
+  id        String   @id @default(cuid())
+  demandId  String
+  url       String
+  name      String
+  mimeType  String?
+  addedById String
+  createdAt DateTime @default(now())
+  demand    Demand   @relation(fields: [demandId], references: [id], onDelete: Cascade)
+  addedBy   User     @relation(fields: [addedById], references: [id])
+
+  @@index([demandId])
+  @@map("demand_attachments")
+}
+
+/// Linha do tempo: comentários e alterações (D-69).
+model DemandEvent {
+  id        String   @id @default(cuid())
+  demandId  String
+  /// "criacao" | "comentario" | "alteracao"
+  kind      String
+  authorId  String
+  /// Comentário (documento do editor).
+  body      Json?
+  /// Alterações: [{ field, from, to }] em texto pronto para exibir.
+  changes   Json?
+  createdAt DateTime @default(now())
+  demand    Demand   @relation(fields: [demandId], references: [id], onDelete: Cascade)
+  author    User     @relation(fields: [authorId], references: [id])
+
+  @@index([demandId, createdAt])
+  @@map("demand_events")
 }
 
 /// Serviços contratáveis (D-15). Nome editável; tipo e fases são regras do produto (fases só leitura na Fase 1).
@@ -197,16 +313,6 @@ model Notification {
   @@map("notifications")
 }
 
-/// Registro de teste da Etapa 1.0: prova do tempo real e da trava em /dev/tempo-real.
-model RealtimeProbe {
-  id          String   @id @default("teste")
-  text        String   @default("")
-  updatedById String?
-  updatedAt   DateTime @updatedAt
-
-  @@map("realtime_probe")
-}
-
 // --- Login (Better Auth: e-mail, senha, Google Authenticator e perfis). Gerado pela ferramenta "auth generate". ---
 
 model User {
@@ -231,6 +337,13 @@ model User {
   twofactors            TwoFactor[]
   editLocks             EditLock[]
   notifications         Notification[]
+  demandsCreated        Demand[]           @relation("DemandCreator")
+  demandsCompleted      Demand[]           @relation("DemandCompleter")
+  demandAssignments     DemandAssignee[]
+  demandEvents          DemandEvent[]
+  demandAttachments     DemandAttachment[]
+  noticesCreated        InstanceNotice[]
+  noticeReads           InstanceNoticeRead[]
 
   @@unique([email])
   @@map("user")
@@ -299,3 +412,71 @@ model TwoFactor {
   @@index([userId])
   @@map("twoFactor")
 }
+
+/// Checklist de Onboarding Hoteleiro em 10 módulos operacionais.
+model ClientChecklist {
+  id              String   @id @default(cuid())
+  clientId        String   @unique
+  status          String   @default("rascunho") // "rascunho" | "em_revisao" | "aprovado"
+  progressPercent Int      @default(0)
+  data            Json     @default("{}")
+  fieldMeta       Json?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  client          Client   @relation(fields: [clientId], references: [id], onDelete: Cascade)
+
+  @@index([status])
+  @@map("client_checklists")
+}
+
+/// Situação do canal para um cliente na Matriz e Fila de Cadastros.
+model ChannelDeployment {
+  id            String      @id @default(cuid())
+  clientId      String
+  catalogItemId String
+  /// "nao_contratado" | "a_cadastrar" | "em_andamento" | "feito_pelo_channel_manager" | "no_ar"
+  status        String      @default("a_cadastrar")
+  bottleneck    String?
+  priority      String      @default("normal") // "normal" | "alta" | "critica"
+  deadline      DateTime?   @db.Date
+  notes         String?
+  liveAt        DateTime?
+  createdAt     DateTime    @default(now())
+  updatedAt     DateTime    @updatedAt
+  client        Client      @relation(fields: [clientId], references: [id], onDelete: Cascade)
+  catalogItem   CatalogItem @relation(fields: [catalogItemId], references: [id], onDelete: Cascade)
+
+  @@unique([clientId, catalogItemId])
+  @@index([clientId])
+  @@index([status])
+  @@map("channel_deployments")
+}
+
+/// Mural de avisos pontuais publicados pelo Administrador (Início / Dashboard).
+model InstanceNotice {
+  id         String               @id @default(cuid())
+  text       String
+  authorId   String
+  authorName String
+  expiresAt  DateTime?
+  createdAt  DateTime             @default(now())
+  author     User                 @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  reads      InstanceNoticeRead[]
+
+  @@index([createdAt])
+  @@map("instance_notices")
+}
+
+/// Registro de ciência ("Ciente") de um aviso por usuário.
+model InstanceNoticeRead {
+  noticeId String
+  userId   String
+  readAt   DateTime       @default(now())
+  notice   InstanceNotice @relation(fields: [noticeId], references: [id], onDelete: Cascade)
+  user     User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@id([noticeId, userId])
+  @@index([userId])
+  @@map("instance_notice_reads")
+}
+

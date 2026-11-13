@@ -52,41 +52,6 @@ test("login por usuário: maiúsculas não importam e o login por e-mail está d
   await expect(page.getByRole("heading", { name: "Início", exact: true })).toBeVisible();
 });
 
-test("tempo real: alteração aparece no outro navegador em menos de 1 segundo, com trava", async ({ browser }) => {
-  const users = testUsers();
-  const ana = await newPersonPage(browser);
-  const bruno = await newPersonPage(browser);
-  await signIn(ana, users.admin);
-  await signIn(bruno, users.operador);
-  await ana.goto("/dev/tempo-real");
-  await bruno.goto("/dev/tempo-real");
-  await expect(ana.getByTestId("conexao")).toHaveText("Conectado");
-  await expect(bruno.getByTestId("conexao")).toHaveText("Conectado");
-
-  // Presença: cada um vê o outro "vendo agora".
-  await expect(ana.getByTestId("vendo-agora")).toHaveText(users.operador.name);
-  await expect(bruno.getByTestId("vendo-agora")).toHaveText(users.admin.name);
-
-  // Ana edita: Bruno vê a faixa "está editando" e não consegue editar.
-  await ana.getByRole("button", { name: /Editar/ }).click();
-  await expect(bruno.getByTestId("faixa-trava")).toContainText(`${users.admin.name} está editando`);
-  await expect(bruno.getByRole("button", { name: /Editar/ })).toBeDisabled();
-
-  const text = `Alteração de teste ${Date.now()}`;
-  await ana.getByTestId("texto-teste").fill(text);
-
-  const started = Date.now();
-  await ana.keyboard.press("Control+s");
-  await expect(bruno.getByTestId("texto-teste")).toHaveValue(text, { timeout: 5000 });
-  const elapsed = Date.now() - started;
-  console.log(`Do Ctrl+S no navegador da Ana até aparecer no do Bruno: ${elapsed} ms`);
-  expect(elapsed).toBeLessThan(1000);
-
-  // Depois de salvar, a trava é liberada para todos.
-  await expect(bruno.getByTestId("faixa-trava")).toBeHidden();
-  await expect(bruno.getByRole("button", { name: /Editar/ })).toBeEnabled();
-});
-
 test("prints das telas nos dois temas", async ({ browser }) => {
   const users = testUsers();
   for (const theme of ["escuro", "claro"] as Theme[]) {
@@ -104,27 +69,11 @@ test("prints das telas nos dois temas", async ({ browser }) => {
     await page.waitForTimeout(300); // fim da animação de abertura do menu
     await page.screenshot({ path: `${PRINTS}/menu-avatar-${theme}.png` });
     await page.keyboard.press("Escape");
-
-    const other = await newPersonPage(browser, theme);
-    await signIn(other, users.operador);
-    await other.goto("/dev/tempo-real");
-    await page.goto("/dev/tempo-real");
-    await expect(page.getByTestId("conexao")).toHaveText("Conectado");
-    await other.getByRole("button", { name: /Editar/ }).click();
-    await expect(page.getByTestId("faixa-trava")).toBeVisible();
-    await page.screenshot({ path: `${PRINTS}/tempo-real-travado-${theme}.png` });
-    await other.keyboard.press("Escape");
-
-    await page.goto("/dev/componentes");
-    await expect(page.getByText("Ajustar restrição de estadia mínima").first()).toBeVisible();
-    await page.waitForTimeout(800); // fim da montagem escalonada
-    await page.screenshot({ path: `${PRINTS}/catalogo-${theme}.png`, fullPage: true });
     await page.context().close();
-    await other.context().close();
   }
 });
 
-test("acessibilidade (axe, WCAG 2.2 AA) nas telas da etapa, nos dois temas", async ({ browser }) => {
+test("acessibilidade (axe, WCAG 2.2 AA) nas telas de login e início, nos dois temas", async ({ browser }) => {
   const { default: AxeBuilder } = await import("@axe-core/playwright");
   const users = testUsers();
   for (const theme of ["escuro", "claro"] as Theme[]) {
@@ -143,14 +92,7 @@ test("acessibilidade (axe, WCAG 2.2 AA) nas telas da etapa, nos dois temas", asy
     await expect(page.getByRole("button", { name: "Entrar" })).toBeEnabled();
     await check("login");
     await signIn(page, users.admin);
-    await check("tela vazia");
-    await page.goto("/dev/tempo-real");
-    await expect(page.getByTestId("conexao")).toHaveText("Conectado");
-    await check("tempo real");
-    await page.goto("/dev/componentes");
-    await expect(page.getByText("Ajustar restrição de estadia mínima").first()).toBeVisible();
-    await page.waitForTimeout(800);
-    await check("catálogo");
+    await check("início");
     await page.context().close();
   }
 });

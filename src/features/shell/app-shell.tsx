@@ -11,8 +11,9 @@ import { actionForEvent } from "./action-registry";
 import { CommandPalette } from "./command-palette";
 import { Sidebar } from "./sidebar";
 import { TabHost } from "./tab-host";
-import { TabStrip } from "./tab-strip";
-import { pathForTab, tabForPath } from "./tabs-model";
+import { demandCodeForPath, pathForTab, tabForPath } from "./tabs-model";
+import { DemandDrawerHost } from "@/features/demands/drawer/demand-drawer";
+import { useDemandDrawer } from "@/features/demands/drawer-store";
 import { TabsProvider, useTabs, useTabsApi } from "./tabs-store";
 import { TopBar } from "./top-bar";
 import { ShellUserProvider, type ShellUser } from "./shell-user";
@@ -44,6 +45,7 @@ function Shell({ instanceName, instanceLogos, user, isDev }: AppShellProps & { i
   const isAdmin = user.role === ROLES.administrador;
 
   useUrlSync();
+  useDemandUrl();
   useShortcuts(() => setPaletteOpen(true));
 
   // Nome ou logos da instância mudaram (Configurações > Identidade): a barra superior se atualiza.
@@ -74,7 +76,6 @@ function Shell({ instanceName, instanceLogos, user, isDev }: AppShellProps & { i
       <div className="flex min-h-0 flex-1">
         <Sidebar isAdmin={isAdmin} />
         <main className="flex min-w-0 flex-1 flex-col">
-          <TabStrip />
           <TabHost />
         </main>
       </div>
@@ -86,18 +87,31 @@ function Shell({ instanceName, instanceLogos, user, isDev }: AppShellProps & { i
         onSignOut={() => void signOut()}
         onSendTestNotification={() => void sendTestNotification()}
       />
+      <DemandDrawerHost />
     </div>
     </ShellUserProvider>
   );
 }
 
-/** Atalhos globais do registro de ações (D-81). Todos usam Alt ou Ctrl, então valem até dentro de campos. */
+/**
+ * Atalhos globais do registro de ações (D-81). Os que usam Alt ou Ctrl valem até dentro de campos;
+ * o `C` (nova demanda, D-59) só vale fora de campos de texto e com o painel de demanda fechado.
+ */
 function useShortcuts(openPalette: () => void) {
   const store = useTabsApi();
   React.useEffect(() => {
     function onKeyDown(event: KeyboardEvent) {
       const action = actionForEvent(event);
       if (!action) return;
+      if (action === "demand.new") {
+        const target = event.target as HTMLElement | null;
+        const typing = !!target && (["INPUT", "TEXTAREA", "SELECT"].includes(target.tagName) || target.isContentEditable);
+        const drawer = useDemandDrawer.getState();
+        if (typing || drawer.code || drawer.creating || document.querySelector("[role=dialog]")) return;
+        event.preventDefault();
+        drawer.create();
+        return;
+      }
       event.preventDefault();
       const state = store.getState();
       if (action === "tabs.new") state.open("nova");
@@ -147,6 +161,28 @@ function useUrlSync() {
     window.addEventListener("popstate", onPopState);
     return () => window.removeEventListener("popstate", onPopState);
   }, [tabs, activeId, activate]);
+}
+
+/** O painel da demanda aparece no endereço (/demandas/DEM-0042): F5 reabre a mesma demanda. */
+function useDemandUrl() {
+  const code = useDemandDrawer((state) => state.code);
+  const open = useDemandDrawer((state) => state.open);
+  const tabs = useTabs((state) => state.tabs);
+  const activeId = useTabs((state) => state.activeId);
+  const first = React.useRef(true);
+
+  React.useEffect(() => {
+    if (!first.current) return;
+    first.current = false;
+    const initial = demandCodeForPath(window.location.pathname);
+    if (initial) open(initial);
+  }, [open]);
+
+  React.useEffect(() => {
+    const active = tabs.find((tab) => tab.id === activeId);
+    const path = code ? `/demandas/${encodeURIComponent(code)}` : active ? pathForTab(active) : null;
+    if (path && window.location.pathname !== path) window.history.replaceState(null, "", path);
+  }, [code, tabs, activeId]);
 }
 
 export function ShellSkeleton() {

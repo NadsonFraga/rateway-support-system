@@ -2,7 +2,7 @@
 
 import * as React from "react";
 import { AnimatePresence, motion } from "motion/react";
-import { ChevronDown, MessageCircle, Pencil, Plus } from "lucide-react";
+import { ChevronDown, Edit3, MessageCircle, Pencil, Plus, RotateCcw } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { motionSprings } from "@/lib/motion";
@@ -125,6 +125,11 @@ function ServiceBlock({
   past?: boolean;
 }) {
   const { copied, copy } = useCopyFeedback();
+  const [customText, setCustomText] = React.useState<string | null>(null);
+  const [showEditor, setShowEditor] = React.useState(false);
+
+  const effectiveMessage = customText ?? message ?? "";
+
   return (
     <section className={cn("flex flex-col", !first && "mt-8 border-t border-line-subtle pt-6", past && "text-ink-secondary")}>
       <div className="group flex h-8 items-center gap-3">
@@ -151,12 +156,22 @@ function ServiceBlock({
         </span>
         {!past && (
           <span className="flex items-center gap-1">
-            <Button variant="ghost" size="sm" disabled={!message} onClick={() => message && void copy("mensagem", message)}>
-              <CopyIcon done={copied === "mensagem"} /> {copied === "mensagem" ? "Copiado" : "Copiar mensagem"}
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => setShowEditor((v) => !v)}
+              className={cn("h-8 text-xs", showEditor && "bg-surface-hover text-ink")}
+              title="Personalizar texto desta mensagem"
+            >
+              <Edit3 className="size-3.5" />
+              <span>{showEditor ? "Fechar editor" : "Personalizar"}</span>
             </Button>
-            {financePhone && message ? (
+            <Button variant="ghost" size="sm" disabled={!effectiveMessage} onClick={() => effectiveMessage && void copy("mensagem", effectiveMessage)}>
+              <CopyIcon done={copied === "mensagem"} /> {copied === "mensagem" ? "Copiado" : "Copiar"}
+            </Button>
+            {financePhone && effectiveMessage ? (
               <Button variant="ghost" size="sm" asChild>
-                <a href={whatsappLink(financePhone, message)} target="_blank" rel="noopener noreferrer">
+                <a href={whatsappLink(financePhone, effectiveMessage)} target="_blank" rel="noopener noreferrer">
                   <MessageCircle /> Cobrar no WhatsApp
                 </a>
               </Button>
@@ -175,6 +190,31 @@ function ServiceBlock({
           </span>
         )}
       </div>
+
+      {/* Inline Message Customizer */}
+      {showEditor && !past && (
+        <div className="mt-2 flex flex-col gap-2 rounded-lg border border-line-subtle bg-surface p-3">
+          <div className="flex items-center justify-between text-xs text-ink-secondary">
+            <span className="font-medium text-ink">Mensagem de cobrança personalizada para este envio:</span>
+            {customText !== null && (
+              <button
+                type="button"
+                onClick={() => setCustomText(null)}
+                className="inline-flex items-center gap-1 text-[11px] text-ink-muted hover:text-ink"
+              >
+                <RotateCcw className="size-3" /> Restaurar modelo padrão
+              </button>
+            )}
+          </div>
+          <textarea
+            value={effectiveMessage}
+            onChange={(e) => setCustomText(e.target.value)}
+            rows={4}
+            className="w-full rounded border border-line-subtle bg-surface-muted/50 p-2 font-mono text-xs text-ink outline-none focus:border-line-focus focus:bg-surface resize-none"
+            placeholder="Digite a mensagem de cobrança..."
+          />
+        </div>
+      )}
     </section>
   );
 }

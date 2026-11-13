@@ -1,10 +1,11 @@
 "use client";
 
-import { Hash, IdCard, LayoutList, ListChecks, MessageSquareText, Package, Users } from "lucide-react";
+import { Database, Hash, IdCard, LayoutList, ListChecks, MessageSquareText, Package, Users } from "lucide-react";
 import { ComingSoon } from "@/components/ui/coming-soon";
 import { useShellUser } from "@/features/shell/shell-user";
 import { ROLES } from "@/features/auth/permissions";
 import { SectionHeader, SettingsFrame } from "../settings-frame";
+import { BackupSection } from "./backup-section";
 import { CatalogSection } from "./catalog-section";
 import { IdentifiersSection } from "./identifiers-section";
 import { IdentitySection } from "./identity-section";
@@ -33,6 +34,7 @@ export function SystemSettingsTab() {
         { id: "servicos", label: "Serviços", icon: Package, content: <ServicesSection /> },
         { id: "mensagens", label: "Mensagens", icon: MessageSquareText, content: <MessagesSection /> },
         { id: "membros", label: "Membros", icon: Users, content: <MembersSection /> },
+        { id: "backup", label: "Backup & Exportação", icon: Database, content: <BackupSection /> },
         {
           id: "etapas",
           label: "Etapas dos Cadastros",

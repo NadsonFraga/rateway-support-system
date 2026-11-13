@@ -26,6 +26,8 @@ export type ClientSummary = {
   services: { serviceId: string; name: string; phase: string }[];
   channelManager: CatalogRef;
   pms: CatalogRef;
+  /** Demandas abertas (não concluídas nem canceladas). */
+  openDemands: number;
   createdAt: string;
   updatedAt: string;
 };

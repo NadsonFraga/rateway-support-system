@@ -2,9 +2,7 @@
 
 import * as React from "react";
 import {
-  Activity,
   Building2,
-  LayoutGrid,
   ClipboardList,
   FilePen,
   Home,
@@ -23,7 +21,10 @@ import { Button } from "@/components/ui/button";
 import { AccountTab } from "@/features/settings/account/account-tab";
 import { SystemSettingsTab } from "@/features/settings/system/settings-tab";
 import { ClientsTab } from "@/features/clients/list/clients-tab";
+import { DemandsTab } from "@/features/demands/list/demands-tab";
 import { ClientTab } from "@/features/clients/sheet/client-tab";
+import { CadastrosTab } from "@/features/cadastros/cadastros-tab";
+import { DashboardTab } from "@/features/dashboard/dashboard-tab";
 import type { Tab, TabKind } from "./tabs-model";
 import { useCurrentTab, useTabDirty, useTabs } from "./tabs-store";
 
@@ -61,8 +62,6 @@ export const MODULES: { kind: TabKind; label: string; icon: LucideIcon }[] = [
 function NewTabLauncher() {
   const { tab } = useCurrentTab();
   const replace = useTabs((state) => state.replace);
-  const isDev = process.env.NODE_ENV !== "production";
-  const nextDraft = useNextDraftNumber();
 
   return (
     <div className="mx-auto flex max-w-xl flex-col gap-4 px-8 py-10">
@@ -84,19 +83,6 @@ function NewTabLauncher() {
             <span>{module.label}</span>
           </ListRow>
         ))}
-        {isDev && (
-          <ListRow
-            role="button"
-            tabIndex={0}
-            onClick={() => replace(tab.id, "rascunho", { numero: String(nextDraft) })}
-            onKeyDown={(event) => event.key === "Enter" && replace(tab.id, "rascunho", { numero: String(nextDraft) })}
-            className="border-b-0"
-          >
-            <FilePen className="text-ink-secondary" aria-hidden />
-            <span>Rascunho de teste</span>
-            <span className="ml-auto text-[13px] text-ink-muted">Desenvolvimento</span>
-          </ListRow>
-        )}
       </div>
     </div>
   );
@@ -152,41 +138,13 @@ function ScratchTab() {
   );
 }
 
-function HomeTab() {
-  return (
-    <div className="mx-auto flex max-w-3xl flex-col gap-6 px-8 py-8">
-      <h1 className="text-lg font-semibold text-ink">Início</h1>
-      <ComingSoon
-        title="Resumo do dia em construção"
-        description="Mural de avisos, minhas demandas e indicadores de implantação chegam na Etapa 1.7."
-      />
-      {process.env.NODE_ENV !== "production" && (
-        <nav aria-label="Telas de teste" className="flex flex-wrap gap-2">
-          {[
-            { href: "/dev/tempo-real", label: "Teste de tempo real", icon: Activity },
-            { href: "/dev/componentes", label: "Catálogo de componentes", icon: LayoutGrid },
-          ].map((link) => (
-            <a
-              key={link.href}
-              href={link.href}
-              className="inline-flex h-8 items-center gap-2 rounded-lg border border-line-medium bg-surface px-3 text-[13px] font-medium text-ink hover:bg-surface-hover"
-            >
-              <link.icon className="size-4 stroke-[1.75]" aria-hidden /> {link.label}
-            </a>
-          ))}
-        </nav>
-      )}
-    </div>
-  );
-}
-
 export const TAB_REGISTRY: Record<TabKind, TabDefinition> = {
-  inicio: { icon: Home, title: () => "Início", breadcrumb: () => ["Início"], content: HomeTab },
+  inicio: { icon: Home, title: () => "Início", breadcrumb: () => ["Início"], content: DashboardTab },
   demandas: {
     icon: ClipboardList,
     title: () => "Demandas",
     breadcrumb: () => ["Demandas"],
-    content: placeholder("Demandas", "Lista, quadro Kanban e o painel de cada demanda chegam na Etapa 1.4."),
+    content: DemandsTab,
   },
   clientes: {
     icon: Building2,
@@ -204,7 +162,7 @@ export const TAB_REGISTRY: Record<TabKind, TabDefinition> = {
     icon: Rocket,
     title: () => "Cadastros",
     breadcrumb: () => ["Cadastros"],
-    content: placeholder("Cadastros", "Matriz geral e Fila de prioridades chegam na Etapa 1.6."),
+    content: CadastrosTab,
   },
   configuracoes: {
     icon: Settings,

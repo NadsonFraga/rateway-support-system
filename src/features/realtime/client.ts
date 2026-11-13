@@ -65,21 +65,34 @@ export function useRealtime<T>(topic: string, onMessage: (message: RealtimeMessa
   });
 
   useEffect(() => {
+    if (!topic) return;
     const s = getSocket();
     const subscribe = () => s.emit("inscrever", topic);
     const listener = (message: RealtimeMessage<T>) => {
       if (message.topic === topic) handlerRef.current(message);
     };
-    subscribe();
+    // Vários componentes podem ouvir o mesmo tópico: só sai do tópico quando o último deixar a tela.
+    const count = (subscribers.get(topic) ?? 0) + 1;
+    subscribers.set(topic, count);
+    if (count === 1) subscribe();
     s.on("connect", subscribe); // reinscreve após reconectar
     s.on("mensagem", listener);
     return () => {
       s.off("connect", subscribe);
       s.off("mensagem", listener);
-      s.emit("desinscrever", topic);
+      const left = (subscribers.get(topic) ?? 1) - 1;
+      if (left > 0) {
+        subscribers.set(topic, left);
+      } else {
+        subscribers.delete(topic);
+        s.emit("desinscrever", topic);
+      }
     };
   }, [topic]);
 }
+
+/** Quantos componentes ouvem cada tópico nesta aba do navegador. */
+const subscribers = new Map<string, number>();
 
 /** Quem está com o registro aberto agora ("vendo agora"). */
 export function usePresence(topic: string) {

@@ -1,6 +1,7 @@
 "use client";
 
 import * as React from "react";
+import { useDemandDrawer } from "@/features/demands/drawer-store";
 import { Inbox } from "lucide-react";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Button } from "@/components/ui/button";
@@ -26,11 +27,13 @@ function relativeTime(iso: string) {
 export function InboxButton({ userId }: { userId: string }) {
   const { items, unread, loaded, read, readAll } = useInbox(userId);
   const navigate = useTabs((state) => state.navigate);
+  const openDemand = useDemandDrawer((state) => state.open);
   const [open, setOpen] = React.useState(false);
 
   function select(item: InboxItem, newTab: boolean) {
     if (!item.readAt) read(item.id);
     if (item.target) navigate(item.target.kind, item.target.params, newTab);
+    if (item.target?.demanda) openDemand(item.target.demanda);
     setOpen(false);
   }
 

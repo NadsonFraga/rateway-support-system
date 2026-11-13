@@ -178,3 +178,56 @@ test("prints e acessibilidade (axe) de Clientes nos dois temas", async ({ browse
     await page.context().close();
   }
 });
+
+test("catálogo com várias categorias e acesso pela conta da empresa (D-103, D-104)", async ({ browser }) => {
+  const users = testUsers();
+  const admin = await personPage(browser);
+  await signIn(admin, users.admin);
+  await admin.getByRole("button", { name: "Configurações", exact: true }).click();
+  await admin.getByRole("navigation", { name: "Configurações" }).getByRole("button", { name: "Catálogo" }).click();
+  const catalog = admin.getByRole("region", { name: "Catálogo" });
+
+  // Um item Channel Manager e PMS ao mesmo tempo.
+  await catalog.getByRole("button", { name: "Adicionar" }).click();
+  let dialog = admin.getByRole("dialog");
+  await dialog.getByLabel("Nome").fill("Sistema Duplo");
+  await dialog.getByRole("checkbox", { name: "Canal de venda" }).uncheck();
+  await dialog.getByRole("checkbox", { name: "Channel Manager" }).check();
+  await dialog.getByRole("checkbox", { name: "PMS" }).check();
+  await dialog.getByRole("button", { name: "Salvar" }).click();
+  await expect(dialog).toBeHidden();
+
+  // Canal pela conta da empresa.
+  await catalog.getByRole("radio", { name: "Canais de venda" }).click();
+  await catalog.getByRole("button", { name: "Adicionar" }).click();
+  dialog = admin.getByRole("dialog");
+  await dialog.getByLabel("Nome").fill("Perfil Empresa");
+  await dialog.getByRole("checkbox", { name: /Acesso pela conta da empresa/ }).check();
+  await dialog.getByLabel("Endereço da extranet").fill("https://extranet.invalid/geral");
+  await dialog.getByRole("button", { name: "Salvar" }).click();
+  await expect(dialog).toBeHidden();
+
+  // A ficha oferece o mesmo item nos dois campos.
+  await admin.getByRole("navigation", { name: "Módulos" }).getByRole("button", { name: "Clientes" }).click();
+  await admin.getByRole("table", { name: "Clientes" }).getByRole("row", { name: /Pousada Teste Sol/ }).click();
+  await expect(admin.getByRole("heading", { name: "Pousada Teste Sol", level: 1 })).toBeVisible();
+  await admin.getByRole("button", { name: "Configurações do cliente" }).click();
+  dialog = admin.getByRole("dialog");
+  await expect(dialog.getByLabel("Channel Manager").locator("option", { hasText: "Sistema Duplo" })).toHaveCount(1);
+  await expect(dialog.getByLabel("PMS").locator("option", { hasText: "Sistema Duplo" })).toHaveCount(1);
+  await admin.keyboard.press("Escape");
+  await expect(dialog).toBeHidden();
+
+  // No Cofre, o acesso guarda só o link da página da propriedade.
+  await admin.keyboard.press("Alt+4");
+  await admin.getByRole("button", { name: "Adicionar acesso" }).first().click();
+  dialog = admin.getByRole("dialog");
+  await dialog.getByLabel("Canal").selectOption({ label: "Perfil Empresa" });
+  await expect(dialog.getByLabel("Usuário")).toHaveCount(0);
+  await dialog.getByLabel("Link da página da propriedade").fill("https://extranet.invalid/propriedade-77");
+  await dialog.getByRole("button", { name: "Adicionar" }).click();
+  await expect(dialog).toBeHidden();
+  const row = admin.getByRole("table", { name: "Acessos do cliente" }).getByRole("row", { name: /Perfil Empresa/ });
+  await expect(row).toContainText("Conta da empresa");
+  await expect(row.getByRole("link", { name: /Abrir página/ })).toHaveAttribute("href", "https://extranet.invalid/propriedade-77");
+});

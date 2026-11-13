@@ -24,7 +24,6 @@ import {
 import { Field } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 import { SegmentedControl } from "@/components/ui/segmented-control";
-import { Select } from "@/components/ui/select";
 import { cn } from "@/lib/utils";
 import { ImageUpload } from "@/features/assets/image-upload";
 import { useRealtime } from "@/features/realtime/client";
@@ -58,8 +57,11 @@ export function CatalogSection() {
   }, []);
   useRealtime(settingsTopic("catalogo"), () => void reload());
 
-  const active = (items ?? []).filter((item) => item.category === category && !item.archived);
-  const archived = (items ?? []).filter((item) => item.category === category && item.archived);
+  const inCategory = (items ?? [])
+    .filter((item) => item.categories.includes(category))
+    .sort((a, b) => (a.positions[category] ?? 0) - (b.positions[category] ?? 0));
+  const active = inCategory.filter((item) => !item.archived);
+  const archived = inCategory.filter((item) => item.archived);
 
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 4 } }),
@@ -73,8 +75,10 @@ export function CatalogSection() {
     const reordered = moveItem(active, from, to);
     setItems((current) => {
       if (!current) return current;
-      const others = current.filter((item) => !(item.category === category && !item.archived));
-      return [...others, ...reordered.map((item, index) => ({ ...item, position: index + 1 }))];
+      const order = new Map(reordered.map((item, index) => [item.id, index + 1]));
+      return current.map((item) =>
+        order.has(item.id) ? { ...item, positions: { ...item.positions, [category]: order.get(item.id) } } : item
+      );
     });
     const result = await reorderCatalog(category, reordered.map((item) => item.id));
     if (!result.ok) {
@@ -202,6 +206,12 @@ function CatalogRow({
         {item.name}
         {item.archived && <span className="ml-2 text-xs font-normal">Arquivado</span>}
       </span>
+      {item.categories.length > 1 && (
+        <span className="hidden text-[13px] text-ink-muted lg:block">
+          {item.categories.map((value) => CATALOG_CATEGORY_SINGULAR[value]).join(" e ")}
+        </span>
+      )}
+      {item.companyAccount && <span className="hidden text-[13px] text-ink-muted lg:block">Conta da empresa</span>}
       {item.extranetUrl && <span className="hidden max-w-[260px] truncate text-[13px] text-ink-secondary md:block">{item.extranetUrl}</span>}
       <DropdownMenu>
         <DropdownMenuTrigger
@@ -236,7 +246,7 @@ function Logo({ item }: { item: Pick<CatalogEntry, "name" | "logoUrl"> }) {
   );
 }
 
-type Draft = { category: CatalogCategory; name: string; logoUrl: string | null; extranetUrl: string };
+type Draft = { categories: CatalogCategory[]; companyAccount: boolean; name: string; logoUrl: string | null; extranetUrl: string };
 
 type DialogProps = {
   entry: CatalogEntry | "novo" | null;
@@ -257,8 +267,14 @@ function CatalogDialog({ entry, ...props }: DialogProps) {
 function CatalogForm({ entry, defaultCategory, onSaved }: Omit<DialogProps, "entry"> & { entry: CatalogEntry | "novo" }) {
   const [draft, setDraft] = React.useState<Draft>(() =>
     entry === "novo"
-      ? { category: defaultCategory, name: "", logoUrl: null, extranetUrl: "" }
-      : { category: entry.category, name: entry.name, logoUrl: entry.logoUrl, extranetUrl: entry.extranetUrl ?? "" }
+      ? { categories: [defaultCategory], companyAccount: false, name: "", logoUrl: null, extranetUrl: "" }
+      : {
+          categories: entry.categories,
+          companyAccount: entry.companyAccount,
+          name: entry.name,
+          logoUrl: entry.logoUrl,
+          extranetUrl: entry.extranetUrl ?? "",
+        }
   );
   const [error, setError] = React.useState<string | null>(null);
   const [pending, setPending] = React.useState(false);
@@ -271,14 +287,14 @@ function CatalogForm({ entry, defaultCategory, onSaved }: Omit<DialogProps, "ent
     onSaved();
   }
 
-  const title = entry === "novo" ? `Novo ${CATALOG_CATEGORY_SINGULAR[draft.category]}` : `Editar ${entry.name}`;
+  const title = entry === "novo" ? `Novo ${CATALOG_CATEGORY_SINGULAR[draft.categories[0] ?? defaultCategory]}` : `Editar ${entry.name}`;
 
   return (
     <>
       <DialogHeader
         title={title}
         actions={
-          <Button size="sm" onClick={() => void save()} disabled={pending || !draft.name.trim()}>
+          <Button size="sm" onClick={() => void save()} disabled={pending || !draft.name.trim() || draft.categories.length === 0}>
             Salvar
           </Button>
         }
@@ -295,20 +311,47 @@ function CatalogForm({ entry, defaultCategory, onSaved }: Omit<DialogProps, "ent
         <Field label="Nome" htmlFor="catalogo-nome">
           <Input id="catalogo-nome" value={draft.name} maxLength={60} autoFocus onChange={(event) => setDraft({ ...draft, name: event.target.value })} />
         </Field>
-        <Field label="Categoria" htmlFor="catalogo-categoria">
-          <Select
-            id="catalogo-categoria"
-            value={draft.category}
-            onChange={(event) => setDraft({ ...draft, category: event.target.value as CatalogCategory })}
-          >
+        <fieldset className="flex flex-col gap-1">
+          <legend className="mb-1.5 text-[13px] font-medium text-ink">Categorias</legend>
+          <div className="flex flex-wrap gap-x-5 gap-y-1">
             {CATALOG_CATEGORIES.map((value) => (
-              <option key={value} value={value}>
-                {CATALOG_CATEGORY_LABEL[value]}
-              </option>
+              <label key={value} className="inline-flex h-8 cursor-pointer items-center gap-2 text-sm text-ink">
+                <input
+                  type="checkbox"
+                  checked={draft.categories.includes(value)}
+                  onChange={(event) =>
+                    setDraft({
+                      ...draft,
+                      categories: event.target.checked
+                        ? CATALOG_CATEGORIES.filter((item) => item === value || draft.categories.includes(item))
+                        : draft.categories.filter((item) => item !== value),
+                    })
+                  }
+                  className="size-3.5 accent-[var(--text-primary)]"
+                />
+                {CATALOG_CATEGORY_SINGULAR[value].replace(/^./, (letter) => letter.toUpperCase())}
+              </label>
             ))}
-          </Select>
-        </Field>
-        <Field label="Endereço da extranet" htmlFor="catalogo-url" help="Endereço completo de login, começando com https://">
+          </div>
+          <p className="text-xs text-ink-muted">Um mesmo item pode ter mais de uma categoria (ex.: Channel Manager e PMS).</p>
+        </fieldset>
+        <label className="inline-flex cursor-pointer items-start gap-2 text-sm text-ink">
+          <input
+            type="checkbox"
+            checked={draft.companyAccount}
+            onChange={(event) => setDraft({ ...draft, companyAccount: event.target.checked })}
+            className="mt-1 size-3.5 accent-[var(--text-primary)]"
+          />
+          <span className="flex flex-col gap-0.5">
+            Acesso pela conta da empresa
+            <span className="text-xs text-ink-muted">Sem usuário e senha. No Cofre, cada cliente guarda só o link da página da propriedade.</span>
+          </span>
+        </label>
+        <Field
+          label="Endereço da extranet"
+          htmlFor="catalogo-url"
+          help={draft.companyAccount ? "Página geral do canal, começando com https://" : "Endereço completo de login, começando com https://"}
+        >
           <Input
             id="catalogo-url"
             type="url"

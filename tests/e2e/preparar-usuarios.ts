@@ -19,6 +19,8 @@ async function main() {
   const { symmetricEncrypt } = await import("better-auth/crypto");
 
   await prisma.editLock.deleteMany();
+  await prisma.demand.deleteMany();
+  await prisma.notification.deleteMany({ where: { user: { email: { endsWith: "@teste.invalid" } } } });
   await prisma.vaultCredential.deleteMany();
   await prisma.clientService.deleteMany();
   await prisma.client.deleteMany();
@@ -30,11 +32,6 @@ async function main() {
     where: { id: "instancia" },
     update: { name: "Instância de Teste" },
     create: { id: "instancia", name: "Instância de Teste" },
-  });
-  await prisma.realtimeProbe.upsert({
-    where: { id: "teste" },
-    update: { text: "" },
-    create: { id: "teste", text: "" },
   });
 
   const context = await auth.$context;
